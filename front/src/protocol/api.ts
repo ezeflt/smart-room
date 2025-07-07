@@ -9,6 +9,11 @@ const api = axios.create({
     },
 });
 
+export const putAlarm = async ({ userId, enabled }: { userId: string; enabled: boolean }) => {
+    const res = await api.post<AlarmResponse>(`alarm/${userId}`, { enabled });
+    return res.data;
+};
+
 export const getAlarm = async (userId: string) => {
     const res = await api.get<AlarmResponse>(`alarm/${userId}`);
     return res.data;
