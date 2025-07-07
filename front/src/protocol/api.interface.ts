@@ -1,5 +1,6 @@
-export {}
-
-export interface HistoryResponse {
+export interface AlarmResponse {
+    
+}
+export interface WeatherResponse {
     
 }
