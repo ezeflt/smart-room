@@ -8,7 +8,7 @@ const Office = () => {
 
     // REQUESTS
     const office = useQuery({
-        queryKey: ['getWeather', idFromUrl],
+        queryKey: ['getOffice', idFromUrl],
         queryFn: () => () => '',
         enabled: !!idFromUrl
     });
