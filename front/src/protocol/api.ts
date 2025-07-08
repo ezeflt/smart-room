@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { AlarmHistoryResponse, AlarmResponse, WeatherHistoryResponse } from './api.interface';
 import { UserState } from '../store/user';
-import { config } from '../../../config';
+import { config } from '../../config';
 
 const api = axios.create({
     baseURL: `http://${config.dns}:${config.port}`,

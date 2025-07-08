@@ -7,7 +7,8 @@ import { GlobalState, setAlarm } from '../../store/global';
 import { UserState } from '../../store/user';
 import { useEffect, useState } from 'react';
 import { AlarmProps } from './alarm.interface';
-import { config } from '../../../../config';
+import { config } from '../../../config';
+import React from 'react';
 
 const Alarm = () => {
     const dispatch = useDispatch();

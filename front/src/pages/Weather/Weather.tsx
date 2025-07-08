@@ -5,7 +5,8 @@ import { WeatherProps } from './weather.interface';
 import { useSelector } from 'react-redux';
 import { State, userSelector } from '../../store/selector';
 import { UserState } from '../../store/user';
-import { config } from '../../../../config';
+import { config } from '../../../config';
+import React from 'react';
 
 const Weather = () => {
     const user = useSelector<State, UserState>(userSelector);
