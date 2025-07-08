@@ -26,4 +26,21 @@ app.get('/weather/:userId', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`API running on http://localhost:${PORT}`);
+const express = require("express");
+const connectDB = require("./db/database.js"); //
+require("dotenv").config();
+
+const app = express();
+const PORT = process.env.PORT;
+
+connectDB();
+
+app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.send("API is running 🟢");
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
