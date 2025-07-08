@@ -15,3 +15,5 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+  #pour lancer le container : docker compose up --build
+  #pour stopper le container : docker compose down

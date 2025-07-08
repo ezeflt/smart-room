@@ -18,3 +18,5 @@ EXPOSE 3000
 
 # Commande de lancement
 CMD ["npm", "start"] 
+
+#pour lancer le container : docker compose up --build
