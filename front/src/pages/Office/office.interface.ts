@@ -1,1 +1,1 @@
-export interface OfficeInterface {}
+export interface OfficeProps {}

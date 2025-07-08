@@ -12,7 +12,7 @@ const Navbar = () => {
             <ul className="nav-list">
                 {navList.map((item, i) => (
                     <li key={i}>
-                        <Link to={`/${item.value}/${user._id}`} className="nav-link">
+                        <Link to={`/${item.value}`} className="nav-link">
                             <>icon</>
                             <span>{item.label}</span>
                         </Link>

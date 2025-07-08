@@ -1,17 +1,25 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface UserState {
-    _id: string;
+    listId: {
+        id1: string;
+        id2: string;
+        id3: string;
+    };
     email: string;
 }
 
 const initialState: UserState = {
-    _id: 'user_id',
+    listId: {
+        id1: '',
+        id2: '',
+        id3: '',
+    },
     email: 'test_email@gmail.com',
 };
 
 export const userSlice = createSlice({
-    name: "user",
+    name: 'user',
     initialState,
     reducers: {
         setUser: (state: UserState, action: PayloadAction<{ user: UserState }>) => {
