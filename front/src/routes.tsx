@@ -12,15 +12,15 @@ const AppRoutes = createBrowserRouter([
         children: [
             {
                 index: true,
-                path: '/alarm/:id',
+                path: '/alarm',
                 element: <Alarm/>,
             },
             {
-                path: '/weather/:id',
+                path: '/weather',
                 element: <Weather/>,
             },
             {
-                path: '/office/:id',
+                path: '/office',
                 element: <Office/>,
             },
             {

@@ -1,32 +1,44 @@
-import { useParams } from 'react-router-dom';
 import './alarm.css';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { getAlarm, putAlarm } from '../../protocol/api';
+import { getAlarmHistory, getListIdQuery, putAlarm } from '../../protocol/api';
 import { useDispatch, useSelector } from 'react-redux';
-import { globalSelector, State } from '../../store/selector';
+import { globalSelector, State, userSelector } from '../../store/selector';
 import { GlobalState, setAlarm } from '../../store/global';
+import { UserState } from '../../store/user';
+import { useEffect, useState } from 'react';
+import { AlarmProps } from './alarm.interface';
+import { config } from '../../../config';
+import React from 'react';
 
 const Alarm = () => {
     const dispatch = useDispatch();
+    const user = useSelector<State, UserState>(userSelector);
     const global = useSelector<State, GlobalState>(globalSelector);
 
-    // QUERY
-    const { id: idFromUrl } = useParams();
+    const [alarm, setAlarAlarm] = useState<AlarmProps| null>(null);
+    const URI = `http://${config.dns}:${config.port}/alarm/stream?${getListIdQuery(user.listId)}`;
 
-    // REQUESTS
-    const alarm = useQuery({
-        queryKey: ['getAlarm', idFromUrl],
-        queryFn: () => getAlarm(idFromUrl as string),
-        enabled: !!idFromUrl,
+    const alarmHistory = useQuery({
+        queryKey: ['getAlarm', user.listId],
+        queryFn: () => getAlarmHistory(user.listId),
     });
 
+    useEffect(() => {
+        const eventSource = new EventSource(URI);
+        eventSource.onmessage = (event) => setAlarAlarm(JSON.parse(event.data));
+
+        return () => {
+            eventSource.close();
+        };
+    }, []);
+
     const handleActivateAlarm = useMutation({
-        mutationFn: () => putAlarm({ userId: idFromUrl as string, enabled: true }),
+        mutationFn: () => putAlarm({ sensorList: user.listId, enabled: true }),
         onSettled: () => dispatch(setAlarm({ isActivated: true })),
     });
 
     const handleDeactivateAlarm = useMutation({
-        mutationFn: () => putAlarm({ userId: idFromUrl as string, enabled: false }),
+        mutationFn: () => putAlarm({ sensorList: user.listId, enabled: false }),
         onSettled: () => dispatch(setAlarm({ isActivated: false })),
     });
 
