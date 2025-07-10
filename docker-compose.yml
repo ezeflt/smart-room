@@ -1,19 +1,27 @@
-version: '3.8'
 services:
   front:
     build:
       context: ./front
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
-      - "8080:80"
-    depends_on:
-      - back
-
+      - "5173:5173"
+    # Les volumes permettent les changements en temps réel
+    volumes:
+      - ./front:/app
+      - /app/node_modules
+    command: npm run dev
   back:
     build:
       context: ./back
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
-      - "3000:3000"
-  #pour lancer le container : docker compose up --build
-  #pour stopper le container : docker compose down
+      - "8000:8000"
+    volumes:
+      - ./back:/app
+      - /app/node_modules
+    command: npm run dev
+
+#pour lancer le container : docker compose up --build
+#pour stopper le container : docker compose down
+#pour voir les logs : docker compose logs -f
+#pour voir les conteneurs : docker ps
