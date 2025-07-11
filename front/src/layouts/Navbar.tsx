@@ -13,7 +13,6 @@ const Navbar = () => {
                 {navList.map((item, i) => (
                     <li key={i}>
                         <Link to={`/${item.value}`} className="nav-link">
-                            <>icon</>
                             <span>{item.label}</span>
                         </Link>
                     </li>
