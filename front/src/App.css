@@ -9,11 +9,25 @@ html,
     font-family: sans-serif;
 }
 
-.app-root {
+.app {
     display: flex;
     flex-direction: row;
+    position: relative;
     height: 100vh;
-    overflow: hidden;
+    background-color: #fff;
+    z-index: 1;
+}
+
+.app::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/src/assets/weather-background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.3;
+    z-index: 0;
 }
 
 #container {

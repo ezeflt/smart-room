@@ -4,7 +4,7 @@ import Navbar from './layouts/Navbar';
 
 function App() {
     return (
-        <div className="app-root">
+        <div className="app">
             <Navbar />
             <div id="container">
                 <div className="page-wrapper">
