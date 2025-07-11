@@ -9,11 +9,25 @@ html,
     font-family: sans-serif;
 }
 
-.app-root {
+.app {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    position: relative;
     height: 100vh;
-    overflow: hidden;
+    background-color: #fff;
+    z-index: 1;
+}
+
+.app::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/src/assets/weather-background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.1;
+    z-index: -1;
 }
 
 #container {
@@ -27,10 +41,8 @@ html,
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-width: 900px;
     max-height: -webkit-fill-available;
     overflow-x: scroll;
-    background-color: #1e1e1e; /* Remplace par ton thème si besoin */
 }
 
 .page-content {
