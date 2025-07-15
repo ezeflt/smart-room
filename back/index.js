@@ -3,6 +3,8 @@ const cors = require('cors');
 const app = express();
 const connectDB = require("./db/database.js"); 
 const routes = require('./routes/routes.js');
+// Import du contrôleur MQTT
+const mqttClient = require('./controllers/mqttController.js');
 require("dotenv").config();
 const PORT = process.env.PORT;
 
@@ -11,6 +13,9 @@ app.use(express.json());
 
 // connexion à la base de données
 connectDB();
+
+// Initialisation du client MQTT
+console.log("🔧 Initialisation du client MQTT...");
 
 app.use('/',routes);
 
