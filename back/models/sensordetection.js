@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const sensorDetectionSchema = new mongoose.Schema({
   sensor_id: {

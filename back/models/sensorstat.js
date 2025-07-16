@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
+
 
 const sensorStatSchema = new mongoose.Schema({
   sensor_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Sensor",
+    type: Number,
     required: true,
   },
   get_time: {
@@ -21,4 +21,6 @@ const sensorStatSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model("SensorStat", sensorStatSchema);
+module.exports = mongoose.model("SensorStat", sensorStatSchema);
+
+
