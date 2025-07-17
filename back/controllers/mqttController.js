@@ -1,11 +1,12 @@
 const mqtt = require("mqtt");
+require("dotenv").config();
 const { connectdb, saveSensorStat } = require("./mqttInsertController.js");
 
 const broker = "mqtt://admin-hetic.arcplex.tech:8828";
 const topic = "pws-packet/202481597308186/#";
 
+// Initialisation du client MQTT au démarrage
 connectdb();
-
 const client = mqtt.connect(broker);
 
 client.on("connect", () => {
@@ -16,12 +17,10 @@ client.on("connect", () => {
 client.on("message", async (topic, message) => {
   try {
     console.log(`Ceci est le topic: ${topic} | Message : ${message.toString()}`);
-    
     const data = JSON.parse(message.toString());
     await saveSensorStat(data);
-    
   } catch (error) {
-    console.error("❌ Erreur lors du traitement:", error.message);
+    console.error("Erreur lors du traitement:", error.message);
   }
 });
 
@@ -34,3 +33,9 @@ process.on("SIGINT", () => {
   client.end();
   process.exit(0);
 });
+
+const mqttController = (req, res) => {
+  res.json({ status: "MQTT client actif et abonné", topic });
+};
+
+module.exports = { mqttController };

@@ -1,7 +1,10 @@
 const mongoose = require("mongoose");
+require("dotenv").config();
 const SensorStat = require("../models/sensorstat.js");
 
-const mongoURL = "mongodb+srv://Aboubakar:abou1234@cluster0.hmgxsvg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
+
+const mongoURL = process.env.MONGO_URL;
 
 function connectdb() {
     mongoose.connect(mongoURL, {
