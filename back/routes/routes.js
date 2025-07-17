@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const { register ,getUser,login } = require("../controllers/userController.js");
+const { register ,getUser,login,  } = require("../controllers/userController.js");
+const { mqttController } = require("../controllers/mqttController.js");
 
 
 router.post("/register", register);
 router.post("/login", login);
 router.get("/user", getUser);
+router.get("/mqtt", mqttController);
 
 module.exports = router;

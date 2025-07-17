@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
+
 
 const roomSensorSchema = new mongoose.Schema({
   sensor_id: {
