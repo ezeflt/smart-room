@@ -8,5 +8,6 @@ router.post("/register", register);
 router.post("/login", login);
 router.get("/user", getUser);
 router.get("/mqtt", mqttController);
+router.delete('/user/:userId', deleteUser);
 
 module.exports = router;

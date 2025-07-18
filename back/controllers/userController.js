@@ -109,6 +109,35 @@ const getUser = async (req, res) => {
     }
 }
 
+const deleteUser = async (req, res) => {
+    const { userId } = req.params;
 
+    try {
+        const deletedUser = await User.findByIdAndDelete(userId);
 
-module.exports = {register, login ,getUser};
+        if (!deletedUser) {
+            return res.status(404).json({
+                message: "Utilisateur non trouvé",
+                type: "danger"
+            });
+        }
+
+        res.status(200).json({
+            message: "Utilisateur supprimé avec succès",
+            type: "success",
+            user: {
+                id: deletedUser._id,
+                username: deletedUser.username,
+                mail: deletedUser.mail
+            }
+        });
+    } catch (err) {
+        console.error("Erreur lors de la suppression :", err);
+        res.status(500).json({
+            message: "Erreur lors de la suppression de l'utilisateur",
+            type: "danger"
+        });
+    }
+};
+
+module.exports = { register, login, getUser, deleteUser };
