@@ -5,7 +5,8 @@ const connectDB = require("./database/database.js");
 const routes = require('./routes/routes.js');
 const mqttClient = require('./controllers/mqttController.js');
 require("dotenv").config();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT ;
+
 
 app.use(cors());
 app.use(express.json());
