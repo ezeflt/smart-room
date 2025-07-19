@@ -109,6 +109,53 @@ const getUser = async (req, res) => {
     }
 }
 
+const updateUser = async (req, res) => {
+    const { userId } = req.params;
+    const { username, mail, password } = req.body;
+
+    try {
+        const updateFields = {};
+
+        if (username) updateFields.username = username;
+        if (mail) updateFields.mail = mail;
+
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            updateFields.password = hashedPassword;
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: updateFields },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                message: "Utilisateur non trouvé",
+                type: "danger"
+            });
+        }
+
+        res.status(200).json({
+            message: "Utilisateur mis à jour avec succès",
+            type: "success",
+            user: {
+                id: updatedUser._id,
+                username: updatedUser.username,
+                mail: updatedUser.mail
+            }
+        });
+    } catch (err) {
+        console.error("Erreur lors de la mise à jour :", err);
+        res.status(500).json({
+            message: "Erreur lors de la mise à jour de l'utilisateur",
+            type: "danger"
+        });
+    }
+};
+
 const deleteUser = async (req, res) => {
     const { userId } = req.params;
 
@@ -140,4 +187,4 @@ const deleteUser = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUser, deleteUser };
+module.exports = { register, login, getUser, updateUser, deleteUser };
