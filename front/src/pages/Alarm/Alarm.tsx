@@ -46,7 +46,7 @@ const Alarm = () => {
     return (
         <>
             <LargeScreen page={Page.Alarm} />
-            <div className="alarm-history-container">
+            <div className={`alarm-history-container ${global.isActivated ? 'on' : 'off'}`}>
                 {alarmHistory && alarmHistory.length > 0 ? (
                     alarmHistory.map((item, idx) => {
                         const date = new Date(item.timestamp);

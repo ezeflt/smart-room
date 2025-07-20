@@ -10,7 +10,7 @@ const LargeScreen = ({ page, degreeCelcius }: LargeScreenProps) => {
     const globalState = useSelector((state: State) => state.global);
 
     const rooms = [1, 2, 3];
-    const alarmToggleLabel = globalState.isActivated ? 'Désactiver' : 'Activer';
+    const alarmToggleLabel = globalState.isActivated ? 'Activer' : 'Désactiver';
 
     const handleRoomChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         dispatch(setSelectedRoom(Number(e.target.value)));
@@ -23,7 +23,10 @@ const LargeScreen = ({ page, degreeCelcius }: LargeScreenProps) => {
     };
 
     return (
-        <div className={`container ${page.toLowerCase()}`} onClick={handleClick}>
+        <div
+            className={`container ${page.toLowerCase()} ${globalState.isActivated ? 'on' : 'off'}`}
+            onClick={handleClick}
+        >
             <select className="room" value={globalState.selectedRoom} onChange={handleRoomChange}>
                 {rooms.map((room) => (
                     <option key={room} value={room}>
