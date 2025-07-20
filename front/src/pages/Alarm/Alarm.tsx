@@ -32,7 +32,16 @@ const Alarm = () => {
         }
     }, [global.isActivated]);
 
+    // HANDLE ALARM
+    const handleActivateAlarm = useMutation({
+        mutationFn: () => putAlarm({ sensorList: user.listId, enabled: true }),
+        onSettled: () => dispatch(setAlarm({ isActivated: true })),
+    });
 
+    const handleDesactivateAlarm = useMutation({
+        mutationFn: () => putAlarm({ sensorList: user.listId, enabled: false }),
+        onSettled: () => dispatch(setAlarm({ isActivated: false })),
+    });
 
     return (
         <>
