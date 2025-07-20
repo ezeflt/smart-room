@@ -2,14 +2,17 @@ const mongoose = require("mongoose");
 
 const sensorDetectionSchema = new mongoose.Schema({
   sensor_id: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Number,
     ref: "Sensor",
     required: true,
   },
-  action: {
-    type: Date,
-    default: Date.now,
-  },
-});
+    time_detection: {
+      type: Date,
+      default: Date.now,
+    },
+    action: { type: String,
+      enum: ['trigger', 'untrigger'],
+      required: true },
+  });
 
-export default mongoose.model("SensorDetection", sensorDetectionSchema);
+  module.exports = mongoose.model("SensorDetection", sensorDetectionSchema);

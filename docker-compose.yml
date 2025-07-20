@@ -15,7 +15,9 @@ services:
       context: ./back
       dockerfile: Dockerfile.dev
     ports:
-      - "8000:8000"
+      - "3000:3000"
+    environment:
+      - PORT=3000
     volumes:
       - ./back:/app
       - /app/node_modules
