@@ -10,6 +10,7 @@ import { AlarmProps } from './alarm.interface';
 import { config } from '../../../config';
 import React from 'react';
 import LargeScreen from '../../layouts/LargeScreen';
+import { Page } from '../../global.interface';
 
 const Alarm = () => {
     const dispatch = useDispatch();
@@ -44,7 +45,7 @@ const Alarm = () => {
 
     return (
         <>
-            <LargeScreen />
+            <LargeScreen page={Page.Alarm} />
         </>
     );
 };
