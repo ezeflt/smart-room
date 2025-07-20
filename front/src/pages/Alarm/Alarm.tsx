@@ -9,29 +9,29 @@ import { useEffect, useState } from 'react';
 import { AlarmProps } from './alarm.interface';
 import { config } from '../../../config';
 import React from 'react';
+import LargeScreen from '../../layouts/LargeScreen';
 
 const Alarm = () => {
     const dispatch = useDispatch();
     const user = useSelector<State, UserState>(userSelector);
     const global = useSelector<State, GlobalState>(globalSelector);
 
-    const [alarm, setAlarAlarm] = useState<AlarmProps| null>(null);
+    const [alarm, setAlarAlarm] = useState<AlarmProps | null>(null);
     const URI = `http://${config.dns}:${config.port}/alarm/stream?${getListIdQuery(user.listId)}`;
 
-    const alarmHistory = useQuery({
-        queryKey: ['getAlarm', user.listId],
-        queryFn: () => getAlarmHistory(user.listId),
-    });
-
+    // GET ALARM HISTORY (STREAM)
     useEffect(() => {
-        const eventSource = new EventSource(URI);
-        eventSource.onmessage = (event) => setAlarAlarm(JSON.parse(event.data));
+        if (global.isActivated) {
+            const eventSource = new EventSource(URI);
+            eventSource.onmessage = (event) => setAlarAlarm(JSON.parse(event.data));
 
-        return () => {
-            eventSource.close();
-        };
-    }, []);
+            return () => {
+                eventSource.close();
+            };
+        }
+    }, [global.isActivated]);
 
+    // HANDLE ALARM
     const handleActivateAlarm = useMutation({
         mutationFn: () => putAlarm({ sensorList: user.listId, enabled: true }),
         onSettled: () => dispatch(setAlarm({ isActivated: true })),
@@ -44,8 +44,7 @@ const Alarm = () => {
 
     return (
         <>
-            <h1>Alarm</h1>
-            <span>Alarm is activated: {global.alarm.isActivated}</span>
+            <LargeScreen />
         </>
     );
 };

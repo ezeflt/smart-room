@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Jaro:opsz@6..72&display=swap');
+
+.container,
+.container * {
+    font-family: 'Jaro', serif;
+}
+
+.container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    margin: auto;
+    height: 60%;
+    width: 70%;
+    background-color: rgba(191, 253, 202, 0.7);
+    border: 1px solid #139e24;
+    border-radius: 20px;
+}
+
+.room {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 30px;
+    font-size: 32px;
+    background: none;
+    border: none;
+}
+
+.room:focus {
+    outline: none;
+    box-shadow: none;
+    border: none;
+    background: none;
+}
+
+.text {
+    font-size: 250px;
+}
+
+.text.alarm {
+    font-size: 100px !important;
+}
+
+.text.weather {
+    font-size: 150px !important;
+}
