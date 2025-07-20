@@ -17,14 +17,14 @@ const Alarm = () => {
     const user = useSelector<State, UserState>(userSelector);
     const global = useSelector<State, GlobalState>(globalSelector);
 
-    const [alarm, setAlarAlarm] = useState<AlarmProps | null>(null);
+    const [alarmHistory, setAlarmHistory] = useState<AlarmProps[] | null>(null);
     const URI = `http://${config.dns}:${config.port}/alarm/stream?${getListIdQuery(user.listId)}`;
 
     // GET ALARM HISTORY (STREAM)
     useEffect(() => {
         if (global.isActivated) {
             const eventSource = new EventSource(URI);
-            eventSource.onmessage = (event) => setAlarAlarm(JSON.parse(event.data));
+            eventSource.onmessage = (event) => setAlarmHistory(JSON.parse(event.data));
 
             return () => {
                 eventSource.close();
@@ -46,6 +46,26 @@ const Alarm = () => {
     return (
         <>
             <LargeScreen page={Page.Alarm} />
+            <div className="alarm-history-container">
+                {alarmHistory && alarmHistory.length > 0 ? (
+                    alarmHistory.map((item, idx) => {
+                        const date = new Date(item.timestamp);
+                        const heure = date.toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        });
+                        const jour = date.toLocaleDateString();
+                        const action = item.action === 'on' ? 'activé' : 'désactivé';
+                        return (
+                            <span key={idx} className="alarm-history-item">
+                                {`${heure} ${jour} - L’alarme de la salle ${item.room} a été ${action} par ${item.userName}`}
+                            </span>
+                        );
+                    })
+                ) : (
+                    <div className="alarm-history-empty">Aucune alarme enregistrée</div>
+                )}
+            </div>
         </>
     );
 };
