@@ -41,7 +41,6 @@ html, body {
     display: flex;
     flex-direction: column;
     flex: 1;
-    max-height: -webkit-fill-available;
     overflow-x: scroll;
 }
 
