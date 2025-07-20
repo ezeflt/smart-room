@@ -25,6 +25,16 @@
     cursor: pointer;
 }
 
+.container.on {
+    background-color: rgba(191, 253, 202, 0.7) !important;
+    border: 1px solid #139e24;
+}
+
+.container.off {
+    background-color: rgba(228, 65, 77, 0.7) !important;
+    border: 1px solid #e4414d;
+}
+
 .room {
     position: absolute;
     top: 0;
