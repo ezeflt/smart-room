@@ -1,11 +1,11 @@
 import './App.css';
 import { Outlet } from 'react-router-dom';
-import Navbar from './layouts/Navbar';
+import Header from './layouts/Header';
 
 function App() {
     return (
         <div className="app">
-            <Navbar />
+            <Header />
             <div id="container">
                 <div className="page-wrapper">
                     <div className="page-content">
