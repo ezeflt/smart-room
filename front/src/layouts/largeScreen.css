@@ -18,6 +18,11 @@
     background-color: rgba(191, 253, 202, 0.7);
     border: 1px solid #139e24;
     border-radius: 20px;
+    cursor: default;
+}
+
+.container.alarm {
+    cursor: pointer;
 }
 
 .room {
