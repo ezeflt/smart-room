@@ -38,7 +38,7 @@ const Alarm = () => {
         onSettled: () => dispatch(setAlarm({ isActivated: true })),
     });
 
-    const handleDeactivateAlarm = useMutation({
+    const handleDesactivateAlarm = useMutation({
         mutationFn: () => putAlarm({ sensorList: user.listId, enabled: false }),
         onSettled: () => dispatch(setAlarm({ isActivated: false })),
     });
