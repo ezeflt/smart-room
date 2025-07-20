@@ -1,31 +1,33 @@
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import React from 'react';
+import { NavLink } from 'react-router-dom';
 import './navbar.css';
-import { UserState } from '../store/user';
-import { State, userSelector } from '../store/selector';
+import logo from '../assets/image/logo.png';
 
 const Navbar = () => {
-    const user = useSelector<State, UserState>(userSelector);
-
     return (
-        <div className="navbar">
-            <ul className="nav-list">
-                {navList.map((item, i) => (
-                    <li key={i}>
-                        <Link to={`/${item.value}`} className="nav-link">
-                            <span>{item.label}</span>
-                        </Link>
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <header className="navbar-header">
+            <div className="navbar-left">
+                <img src={logo} alt="Logo" className="navbar-logo" style={{ width: '75px', height: '75px' }} />
+            </div>
+            <nav className="navbar-center">
+                <NavLink
+                    to="/alarm"
+                    className={({ isActive }) => isActive ? "navbar-link active" : "navbar-link"}
+                >
+                    Alarme
+                </NavLink>
+                <NavLink
+                    to="/weather"
+                    className={({ isActive }) => isActive ? "navbar-link active" : "navbar-link"}
+                >
+                    Météo
+                </NavLink>
+            </nav>
+            <div className="navbar-right">
+                <NavLink to="/account" className="navbar-link" activeClassName="active">Compte</NavLink>
+            </div>
+        </header>
     );
 };
-
-const navList = [
-    { label: 'Alarm', value: 'alarm' },
-    { label: 'Weather', value: 'weather' },
-    { label: 'Office', value: 'office' },
-];
 
 export default Navbar;
