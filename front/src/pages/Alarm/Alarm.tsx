@@ -34,7 +34,18 @@ const Alarm = () => {
 
     // HANDLE ALARM
     const handleActivateAlarm = useMutation({
-        mutationFn: () => putAlarm({ sensorList: user.listId, enabled: true }),
+        mutationFn: async () => {
+            // Envoie l'utilisateur connecté au backend
+            const token = localStorage.getItem('token');
+            await fetch(`http://${config.dns}:${config.port}/alarm/activate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            return putAlarm({ sensorList: user.listId, enabled: true });
+        },
         onSettled: () => dispatch(setAlarm({ isActivated: true })),
     });
 
