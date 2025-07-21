@@ -24,7 +24,7 @@ const Weather = () => {
     }, []);
 
   return (
-    <div className="weather-page" style={{ padding: '2rem' }}>
+    <div style={{ padding: '2rem' }}>
         <h1> Météo :</h1>
       <RowStatistics />
     </div>

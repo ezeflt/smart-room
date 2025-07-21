@@ -7,11 +7,7 @@ function App() {
         <div className="app">
             <Header />
             <div id="container">
-                <div className="page-wrapper">
-                    <div className="page-content">
-                        <Outlet />
-                    </div>
-                </div>
+                <Outlet />
             </div>
         </div>
     );

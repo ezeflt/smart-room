@@ -45,6 +45,7 @@ const Alarm = () => {
 
     return (
         <>
+        <div className="container-wrapper">
             <LargeScreen page={Page.Alarm} />
             <div className={`alarm-history-container ${global.isActivated ? 'on' : 'off'}`}>
                 {alarmHistory && alarmHistory.length > 0 ? (
@@ -66,6 +67,7 @@ const Alarm = () => {
                     <div className="alarm-history-empty">Aucune alarme enregistrée</div>
                 )}
             </div>
+        </div>
         </>
     );
 };
