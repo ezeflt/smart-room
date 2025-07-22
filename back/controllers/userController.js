@@ -64,9 +64,9 @@ const login = async (req, res) => {
 
         // Création d'un token
         const token = jwt.sign(
-            { userId: user._id },
+            { userId: user._id, mail: user.mail }, // <-- ajoute l'email ici
             process.env.JWT_SECRET,
-            { expiresIn: '24h'}
+            { expiresIn: '24h' }
         );
         console.log("Token généré :", token);
         // Envoi du token et des informations utilisateur

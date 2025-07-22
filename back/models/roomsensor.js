@@ -3,8 +3,7 @@ const mongoose = require("mongoose");
 
 const roomSensorSchema = new mongoose.Schema({
   sensor_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Sensor",
+    type: Number, // <-- DOIT être Number !
     required: true,
   },
   room_id: {
@@ -14,4 +13,4 @@ const roomSensorSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model("RoomSensor", roomSensorSchema);
+module.exports = mongoose.model("RoomSensor", roomSensorSchema);
