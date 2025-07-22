@@ -4,6 +4,9 @@ const app = express();
 const connectDB = require("./database/database.js"); 
 const routes = require('./routes/routes.js');
 const mqttClient = require('./controllers/mqttController.js');
+const cron = require('node-cron');
+const { sendDailyDetectionReport } = require('./controllers/sendDailyReport.js');
+
 require("dotenv").config();
 const PORT = process.env.PORT ;
 
@@ -41,6 +44,16 @@ app.get('/weather/:userId', (req, res) => {
 app.get("/", (req, res) => {
   res.send("API is running 🟢");
 });
+
+
+
+cron.schedule('55 0 * * *', () => {
+  console.log("⏰ Envoi automatique du rapport quotidien à 00h46 (Europe/Paris)...");
+  sendDailyDetectionReport();
+}, {
+  timezone: "Europe/Paris"
+});
+
 
 
 
