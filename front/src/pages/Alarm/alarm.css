@@ -13,6 +13,7 @@
     gap: 3px;
     flex-direction: column;
     padding: 16px;
+    width: -webkit-fill-available;
 }
 
 .alarm-history-container.on {
@@ -34,5 +35,5 @@
 }
 
 .alarm-history-empty {
-    width: 80%;
+
 }
