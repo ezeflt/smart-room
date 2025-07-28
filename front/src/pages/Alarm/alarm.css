@@ -32,3 +32,7 @@
     overflow: auto;
     gap: 16px;
 }
+
+.alarm-history-empty {
+    width: 80%;
+}
