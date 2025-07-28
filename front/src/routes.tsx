@@ -4,6 +4,7 @@ import { createBrowserRouter } from 'react-router-dom';
 import Weather from './pages/Weather/Weather';
 import Alarm from './pages/Alarm/Alarm';
 import Office from './pages/Office/Office';
+import Login from './pages/Login/Login';
 
 const AppRoutes = createBrowserRouter([
     {
@@ -22,6 +23,10 @@ const AppRoutes = createBrowserRouter([
             {
                 path: '/office',
                 element: <Office/>,
+            },
+            {
+                path: '/login',
+                element: <Login />,
             },
             {
                 path: '*',
