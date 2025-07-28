@@ -1,36 +1,46 @@
 @import url('https://fonts.googleapis.com/css2?family=Jaro:opsz@6..72:wght@400&display=swap');
 
-.container,
-.container * {
+.large-screen-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+}
+
+.large-screen-container,
+.large-screen-container * {
     font-family: 'Jaro', serif;
     font-weight: 400;
 }
 
-.container {
+.screen {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 5px;
     margin: auto;
-    height: 60%;
+    height: 100%;
     width: 70%;
     background-color: rgba(191, 253, 202, 0.7);
     border: 1px solid #139e24;
     border-radius: 20px;
     cursor: default;
+    z-index: 1;
 }
 
-.container.alarm {
+.screen.alarm {
     cursor: pointer;
 }
 
-.container.on {
+.screen.on {
     background-color: rgba(191, 253, 202, 0.7) !important;
     border: 1px solid #139e24;
 }
 
-.container.off {
+.screen.off {
     background-color: rgba(228, 65, 77, 0.7) !important;
     border: 1px solid #e4414d;
 }
@@ -43,6 +53,8 @@
     font-size: 32px;
     background: none;
     border: none;
+    z-index: 2;
+    pointer-events: auto;
 }
 
 .room:focus {
@@ -62,4 +74,31 @@
 
 .text.weather {
     font-size: 150px !important;
+}
+
+.room-column {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    z-index: 2;
+}
+
+.room-btn {
+    border: none;
+    background-color: initial;
+    color: #000;
+    border: 1px solid #000;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.room-btn.selected {
+    background-color: #000;
+    color: #fff;
 }
