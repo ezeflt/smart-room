@@ -12,10 +12,6 @@ const LargeScreen = ({ page, degreeCelcius }: LargeScreenProps) => {
     const rooms = [1, 2, 3];
     const alarmToggleLabel = globalState.isActivated ? 'Activer' : 'Désactiver';
 
-    const handleRoomChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        dispatch(setSelectedRoom(Number(e.target.value)));
-    };
-
     const handleClick = () => {
         if (page === Page.Alarm) {
             dispatch(setAlarm({ isActivated: !globalState.isActivated }));
@@ -23,20 +19,33 @@ const LargeScreen = ({ page, degreeCelcius }: LargeScreenProps) => {
     };
 
     return (
-        <div
-            className={`container ${page.toLowerCase()} ${globalState.isActivated ? 'on' : 'off'}`}
-            onClick={handleClick}
-        >
-            <select className="room" value={globalState.selectedRoom} onChange={handleRoomChange}>
+        <div className="large-screen-container">
+            <div
+                className={`screen ${page.toLowerCase()} ${
+                    globalState.isActivated ? 'on' : 'off'
+                }`}
+                onClick={handleClick}
+            >
+                <span className={`text ${page.toLowerCase()}`}>
+                    {page === Page.Alarm ? alarmToggleLabel : `${degreeCelcius} °C`}
+                </span>
+            </div>
+            <div className="room-column">
                 {rooms.map((room) => (
-                    <option key={room} value={room}>
-                        Salle {room}
-                    </option>
+                    <button
+                        key={room}
+                        className={`room-btn${
+                            globalState.selectedRoom === room ? ' selected' : ''
+                        }`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            dispatch(setSelectedRoom(room));
+                        }}
+                    >
+                        {room}
+                    </button>
                 ))}
-            </select>
-            <span className={`text ${page.toLowerCase()}`}>
-                {page === Page.Alarm ? alarmToggleLabel : `${degreeCelcius} °C`}
-            </span>
+            </div>
         </div>
     );
 };
