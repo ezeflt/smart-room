@@ -188,9 +188,6 @@ const deleteUser = async (req, res) => {
     }
 };
 
-
-
-
 const forgotPassword = async (req, res) => {
     const { mail } = req.body;
 
@@ -211,7 +208,6 @@ const forgotPassword = async (req, res) => {
         );
 
         const resetLink = `http://localhost:3000/reset-password?token=${token}`;
-
   
         const transporter = nodemailer.createTransport({
             service: "gmail",
@@ -221,7 +217,6 @@ const forgotPassword = async (req, res) => {
             }
         });
 
-        
         const mailOptions = {
             from: process.env.GMAIL_USER,
             to: user.mail,
@@ -233,8 +228,7 @@ const forgotPassword = async (req, res) => {
                 <p>Ce lien expire dans 15 minutes.</p>
             `
         };
-
-       
+  
         await transporter.sendMail(mailOptions);
 
         res.status(200).json({
@@ -251,9 +245,6 @@ const forgotPassword = async (req, res) => {
         });
     }
 };
-
-
-
 
 const resetPassword = async (req, res) => {
     const { token, newPassword, confirmPassword } = req.body;
@@ -275,7 +266,6 @@ const resetPassword = async (req, res) => {
                 type: "danger"
             });
         }
-
         
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);

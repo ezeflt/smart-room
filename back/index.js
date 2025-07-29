@@ -6,6 +6,8 @@ const routes = require('./routes/routes.js');
 const mqttClient = require('./controllers/mqttController.js');
 const cron = require('node-cron');
 const { sendDailyDetectionReport } = require('./controllers/sendDailyReport.js');
+const http = require('http');
+const { Server } = require('socket.io');
 
 require("dotenv").config();
 const PORT = process.env.PORT ;
@@ -54,9 +56,25 @@ cron.schedule('55 0 * * *', () => {
   timezone: "Europe/Paris"
 });
 
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+
+// On rend io accessible globalement (pas optimal mais simple pour démo)
+global._io = io;
+
+io.on('connection', (socket) => {
+  console.log('Client WebSocket connecté');
+  socket.on('disconnect', () => {
+    console.log('Client WebSocket déconnecté');
+  });
+});
 
 
-
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
