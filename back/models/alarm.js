@@ -5,6 +5,21 @@ const alarmSchema = new mongoose.Schema({
     type: String,
     enum: ['active', 'desactive'],
     required: true
+  },
+  timestamp: {
+    type: Date,
+    default: Date.now,
+    required: true
+  },
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', 
+    required: true
+  },
+  room_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Room',
+    required: true
   }
 });
 
