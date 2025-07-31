@@ -38,19 +38,27 @@ const Weather = () => {
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data && data.length > 0) {
-                const currentTemp = data[0].temperature;
-                const currentHumidity = data[0].humidity;
-                const currentPressure = data[0].pressure;
-                
-                if (currentTemp !== lastTemperature) {
-                    setLastTemperature(currentTemp);
-                }
-                if (currentHumidity !== lastHumidity) {
-                    setLastHumidity(currentHumidity);
-                }
-                if (currentPressure !== lastPressure) {
-                    setLastPressure(currentPressure);
-                }
+                // Traitement des données pour chaque capteur
+                data.forEach((sensorData, index) => {
+                    const currentTemp = sensorData.temperature;
+                    const currentHumidity = sensorData.humidity;
+                    const currentPressure = sensorData.pressure;
+                    
+                    if (currentTemp !== lastTemperature) {
+                        setLastTemperature(currentTemp);
+                    }
+                    if (currentHumidity !== lastHumidity) {
+                        setLastHumidity(currentHumidity);
+                    }
+                    if (currentPressure !== lastPressure) {
+                        setLastPressure(currentPressure);
+                    }
+                    
+                    // Console.log pour le premier capteur seulement
+                    if (index === 0) {
+                        console.log('📊 Capteur 1 - Temp:', currentTemp, '°C, Humidité:', currentHumidity, '%, Pression:', currentPressure, 'Pa');
+                    }
+                });
             }
             setWeatherData(data);
         };
