@@ -14,6 +14,9 @@ import Modal from '../../atoms/Modal';
 const Weather = () => {
     const user = useSelector<State, UserState>(userSelector);
     const [weatherData, setWeatherData] = useState<WeatherProps | null>(null);
+    const [lastTemperature, setLastTemperature] = useState<number | null>(null);
+    const [lastHumidity, setLastHumidity] = useState<number | null>(null);
+    const [lastPressure, setLastPressure] = useState<number | null>(null);
     const uri = `http://${config.dns}:${config.port}/weather/stream?${getListIdQuery(user.listId)}`;
     const location = useLocation();
     const [modalOpen, setModalOpen] = useState(false);
@@ -32,12 +35,30 @@ const Weather = () => {
 
     useEffect(() => {
         const eventSource = new EventSource(uri);
-        eventSource.onmessage = (event) => setWeatherData(JSON.parse(event.data));
+        eventSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data && data.length > 0) {
+                const currentTemp = data[0].temperature;
+                const currentHumidity = data[0].humidity;
+                const currentPressure = data[0].pressure;
+                
+                if (currentTemp !== lastTemperature) {
+                    setLastTemperature(currentTemp);
+                }
+                if (currentHumidity !== lastHumidity) {
+                    setLastHumidity(currentHumidity);
+                }
+                if (currentPressure !== lastPressure) {
+                    setLastPressure(currentPressure);
+                }
+            }
+            setWeatherData(data);
+        };
 
         return () => {
             eventSource.close();
         };
-    }, []);
+    }, [lastTemperature, lastHumidity, lastPressure]);
 
   return (
     <div style={{ padding: '2rem' }}>
