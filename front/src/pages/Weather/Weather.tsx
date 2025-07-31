@@ -17,6 +17,7 @@ const Weather = () => {
     const [lastTemperature, setLastTemperature] = useState<number | null>(null);
     const [lastHumidity, setLastHumidity] = useState<number | null>(null);
     const [lastPressure, setLastPressure] = useState<number | null>(null);
+    const [lastSensorId, setLastSensorId] = useState<string | null>(null);
     const uri = `http://${config.dns}:${config.port}/weather/stream?${getListIdQuery(user.listId)}`;
     const location = useLocation();
     const [modalOpen, setModalOpen] = useState(false);
@@ -43,20 +44,24 @@ const Weather = () => {
                     const currentTemp = sensorData.temperature;
                     const currentHumidity = sensorData.humidity;
                     const currentPressure = sensorData.pressure;
+                    const currentSensorId = sensorData.sensor_id;
                     
-                    if (currentTemp !== lastTemperature) {
+                    // Console.log pour le premier capteur seulement, et seulement si les valeurs changent
+                    if (index === 0 && (
+                        currentTemp !== lastTemperature || 
+                        currentHumidity !== lastHumidity || 
+                        currentPressure !== lastPressure ||
+                        currentSensorId !== lastSensorId
+                    )) {
+                        const temp = currentTemp !== undefined ? currentTemp : 'N/A';
+                        const humidity = currentHumidity !== undefined ? currentHumidity : 'N/A';
+                        const pressure = currentPressure !== undefined ? currentPressure : 'N/A';
+                        console.log('📊 Capteur', currentSensorId, '- Temp:', temp, '°C, Humidité:', humidity, '%, Pression:', pressure, 'Pa');
+                        
                         setLastTemperature(currentTemp);
-                    }
-                    if (currentHumidity !== lastHumidity) {
                         setLastHumidity(currentHumidity);
-                    }
-                    if (currentPressure !== lastPressure) {
                         setLastPressure(currentPressure);
-                    }
-                    
-                    // Console.log pour le premier capteur seulement
-                    if (index === 0) {
-                        console.log('📊 Capteur 1 - Temp:', currentTemp, '°C, Humidité:', currentHumidity, '%, Pression:', currentPressure, 'Pa');
+                        setLastSensorId(currentSensorId);
                     }
                 });
             }
@@ -66,7 +71,7 @@ const Weather = () => {
         return () => {
             eventSource.close();
         };
-    }, [lastTemperature, lastHumidity, lastPressure]);
+    }, [lastTemperature, lastHumidity, lastPressure, lastSensorId]);
 
   return (
     <div style={{ padding: '2rem' }}>
