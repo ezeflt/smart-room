@@ -8,20 +8,56 @@ import { UserState } from '../../store/user';
 import { config } from '../../../config';
 import React from 'react';
 import RowStatistics from './RowStatistics';
+import { useLocation } from 'react-router-dom';
 
 const Weather = () => {
     const user = useSelector<State, UserState>(userSelector);
     const [weatherData, setWeatherData] = useState<WeatherProps | null>(null);
+    const [lastTemperature, setLastTemperature] = useState<number | null>(null);
+    const [lastHumidity, setLastHumidity] = useState<number | null>(null);
+    const [lastPressure, setLastPressure] = useState<number | null>(null);
     const uri = `http://${config.dns}:${config.port}/weather/stream?${getListIdQuery(user.listId)}`;
+    const location = useLocation();
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalMessage, setModalMessage] = useState<string | null>(null);
+    const [hasShownAlert, setHasShownAlert] = useState(false);
+
+    useEffect(() => {
+        if (location.state && location.state.alert && !hasShownAlert) {
+            setModalMessage(location.state.alert);
+            setModalOpen(true);
+            setHasShownAlert(true);
+            // Nettoie l'alerte après affichage pour éviter de la revoir au prochain accès
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state, hasShownAlert]);
 
     useEffect(() => {
         const eventSource = new EventSource(uri);
-        eventSource.onmessage = (event) => setWeatherData(JSON.parse(event.data));
+        eventSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data && data.length > 0) {
+                const currentTemp = data[0].temperature;
+                const currentHumidity = data[0].humidity;
+                const currentPressure = data[0].pressure;
+                
+                if (currentTemp !== lastTemperature) {
+                    setLastTemperature(currentTemp);
+                }
+                if (currentHumidity !== lastHumidity) {
+                    setLastHumidity(currentHumidity);
+                }
+                if (currentPressure !== lastPressure) {
+                    setLastPressure(currentPressure);
+                }
+            }
+            setWeatherData(data);
+        };
 
         return () => {
             eventSource.close();
         };
-    }, []);
+    }, [lastTemperature, lastHumidity, lastPressure]);
 
   return (
     <div style={{ padding: '2rem' }}>
