@@ -13,7 +13,7 @@ const SensorDetection = require("../models/sensordetection.js");
 const Alarme = require("../models/alarm.js"); // À créer si non existant
 const { setLastAlarmUser, getLastAlarmUser } = require('./alarmUserStore');
 const mongoURL = process.env.MONGO_URL;
-const RoomSensor = require("../models/roomSensor.js");
+const RoomSensor = require("../models/roomsensor.js");
 const Room = require("../models/room.js");
 
 connectdb();
