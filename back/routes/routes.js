@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { register ,getUser,login, deleteUser, updateUser,forgotPassword, resetPassword  } = require("../controllers/userController.js");
+const { register ,getUser,login, deleteUser, updateUser,forgotPassword, resetPassword, logout  } = require("../controllers/userController.js");
 const { mqttController } = require("../controllers/mqttController.js");
 const { getTemperatureBySensor, getHumidityBySensor, getPressureBySensor } = require("../controllers/sensorStatController.js");
 const { setAlarmUser } = require("../controllers/mqttAlarmController.js");
@@ -19,5 +19,6 @@ router.get("/sensor/:sensor_id/humidity", getHumidityBySensor);
 router.get("/sensor/:sensor_id/pressure", getPressureBySensor);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
+router.post("/logout", logout);
 
 module.exports = router;

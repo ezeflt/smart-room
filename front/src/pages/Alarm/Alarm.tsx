@@ -11,11 +11,35 @@ import { config } from '../../../config';
 import React from 'react';
 import LargeScreen from '../../layouts/LargeScreen';
 import { Page } from '../../global.interface';
+import { useNavigate } from 'react-router-dom';
 
 const Alarm = () => {
     const dispatch = useDispatch();
     const user = useSelector<State, UserState>(userSelector);
     const global = useSelector<State, GlobalState>(globalSelector);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        let alert = '';
+        if (!token) {
+            alert = 'Veuillez vous connecter pour accéder à la page Alarme.';
+        } else {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.exp * 1000 < Date.now()) {
+                    alert = 'Votre session a expiré, veuillez vous reconnecter.';
+                }
+            } catch {
+                alert = 'Token invalide, veuillez vous reconnecter.';
+            }
+        }
+        if (alert) {
+            navigate('/weather', { state: { alert } });
+        }
+    }, [navigate]);
+
+    // Retirer toute la logique d'erreur et de redirection liée au token
 
     const [alarmHistory, setAlarmHistory] = useState<AlarmProps[] | null>(null);
     const URI = `http://${config.dns}:${config.port}/alarm/stream?${getListIdQuery(user.listId)}`;
