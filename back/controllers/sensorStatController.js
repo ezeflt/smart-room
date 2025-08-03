@@ -11,7 +11,6 @@ async function getTemperatureBySensor(req, res) {
     }
 }
 
-
 async function getHumidityBySensor(req, res) {
     try {
         const sensor_id = Number(req.params.sensor_id);
@@ -21,7 +20,6 @@ async function getHumidityBySensor(req, res) {
         res.status(500).json({ error: err.message });
     }
 }
-
 
 async function getPressureBySensor(req, res) {
     try {

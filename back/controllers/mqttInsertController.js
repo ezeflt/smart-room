@@ -40,6 +40,14 @@ async function saveSensorStat(payload) {
                 { $set: update },
                 { upsert: true, new: true }
             );
+            // Émission WebSocket à tous les clients
+            if (global._io) {
+                global._io.emit('sensor_update', {
+                    sensor_id: source_address,
+                    data: update,
+                    timestamp
+                });
+            }
         }
     } catch (error) {
         console.error(`Erreur lors du traitement du capteur ${sensor_id}:`, error.message);
