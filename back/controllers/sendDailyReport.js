@@ -2,7 +2,7 @@ require("dotenv").config();
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const SensorDetection = require("../models/sensordetection");
-const RoomSensor = require("../models/roomSensor");
+const RoomSensor = require("../models/roomsensor");
 const Room = require("../models/room");
 const { getLastAlarmUser } = require('./alarmUserStore');
 const { connectdb } = require("./mqttInsertController");
