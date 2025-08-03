@@ -46,26 +46,17 @@ const Weather = () => {
                     const currentPressure = sensorData.pressure;
                     const currentSensorId = sensorData.sensor_id;
                     
-                    // Console.log pour le premier capteur seulement, et seulement si les valeurs changent
+                    // Mise à jour des dernières valeurs pour le premier capteur
                     if (index === 0) {
-                        // Log pour la température
                         if (currentTemp !== lastTemperature) {
-                            const temp = currentTemp !== undefined ? currentTemp : 'N/A';
-                            console.log('🌡️ Capteur', currentSensorId, '- Température:', temp, '°C');
                             setLastTemperature(currentTemp);
                         }
                         
-                        // Log pour l'humidité
                         if (currentHumidity !== lastHumidity) {
-                            const humidity = currentHumidity !== undefined ? currentHumidity : 'N/A';
-                            console.log('💧 Capteur', currentSensorId, '- Humidité:', humidity, '%');
                             setLastHumidity(currentHumidity);
                         }
                         
-                        // Log pour la pression
                         if (currentPressure !== lastPressure) {
-                            const pressure = currentPressure !== undefined ? currentPressure : 'N/A';
-                            console.log('🌪️ Capteur', currentSensorId, '- Pression:', pressure, 'Pa');
                             setLastPressure(currentPressure);
                         }
                         
