@@ -7,6 +7,7 @@ import { State, userSelector } from '../../store/selector';
 import { UserState } from '../../store/user';
 import { config } from '../../../config';
 import React from 'react';
+import RowStatistics from './RowStatistics';
 
 const Weather = () => {
     const user = useSelector<State, UserState>(userSelector);
@@ -22,7 +23,12 @@ const Weather = () => {
         };
     }, []);
 
-    return <>Weather</>;
-};
+  return (
+    <div style={{ padding: '2rem' }}>
+        <h1> Météo :</h1>
+      <RowStatistics />
+    </div>
+  );
+}
 
 export default Weather;

@@ -1,17 +1,16 @@
 import './App.css';
-import { Outlet } from 'react-router-dom';
-import Navbar from './layouts/Navbar';
+import { Outlet, useLocation } from 'react-router-dom';
+import Header from './layouts/Header';
 
 function App() {
+    const isNotLoginPage = useLocation().pathname !== '/login';
+    const isConnected = true;
+    
     return (
-        <div className="app-root">
-            <Navbar />
+        <div className="app">
+            {isConnected && isNotLoginPage && <Header />}
             <div id="container">
-                <div className="page-wrapper">
-                    <div className="page-content">
-                        <Outlet />
-                    </div>
-                </div>
+                <Outlet />
             </div>
         </div>
     );

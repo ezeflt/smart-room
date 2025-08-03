@@ -1,39 +1,35 @@
 /* App.css */
 
-body,
-html,
-#root {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    font-family: sans-serif;
+html, body {
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
-.app-root {
+.app {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    position: relative;
     height: 100vh;
-    overflow: hidden;
+    background-color: #fff;
+    z-index: 1;
+}
+
+.app::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('/src/assets/weather-background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.2;
+    z-index: -1;
 }
 
 #container {
     display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: auto;
-}
-
-.page-wrapper {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 900px;
-    max-height: -webkit-fill-available;
-    overflow-x: scroll;
-    background-color: #1e1e1e; /* Remplace par ton thème si besoin */
-}
-
-.page-content {
-    padding: 30px;
-    flex: 1;
+    height: 100vh;
+    width: 100vw;
 }
