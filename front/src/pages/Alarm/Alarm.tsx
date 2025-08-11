@@ -48,7 +48,10 @@ const Alarm = () => {
     useEffect(() => {
         if (global.isActivated) {
             const eventSource = new EventSource(URI);
-            eventSource.onmessage = (event) => setAlarmHistory(JSON.parse(event.data));
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                setAlarmHistory(data);
+            };
 
             return () => {
                 eventSource.close();
