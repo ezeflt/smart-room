@@ -1,4 +1,6 @@
 const SensorStat = require("../models/sensorstat.js");
+const { historic } = require("./alarmController.js");
+const { getTemperatureBySensor, getHumidityBySensor, getPressureBySensor } = require("../controllers/sensorStatController.js");
 
 // Endpoint SSE pour les données météo en temps réel
 const weatherStream = (req, res) => {
@@ -15,7 +17,14 @@ const weatherStream = (req, res) => {
     // Envoi initial des données
     const sendData = async () => {
         try {
-            const data = await SensorStat.find().sort({ get_time: -1 }).limit(9);
+            const temperature = await getTemperatureBySensor(room_id);
+            const humidity = await getHumidityBySensor(room_id);
+            const pressure = await getPressureBySensor(room_id);
+            const data = {
+                temperature,
+                humidity,
+                pressure
+            }
             res.write(`data: ${JSON.stringify(data)}\n\n`);
         } catch (error) {
             console.error('Erreur lors de l\'envoi des données SSE:', error);
@@ -44,12 +53,11 @@ const alarmStream = (req, res) => {
     });
 
     const room_id = req.query.room_id;
-
     // Envoi initial des données
     const sendData = async () => {
         try {
             // Mock data instead of database query
-            const data = await SensorStat.find().sort({ get_time: -1 }).limit(9);
+            const data = await historic();
             res.write(`data: ${JSON.stringify(data)}\n\n`);
         } catch (error) {
             console.error('Erreur lors de l\'envoi des données SSE alarme:', error);
@@ -81,7 +89,7 @@ const roomStatusStream = (req, res) => {
     const sendData = async () => {
         try {
             // Mock data pour le statut des alarmes par salle
-            const data = await SensorDetection.find().sort({ time_detection: -1 }).limit(10);
+            const data = // TODO: get data from database
             res.write(`data: ${JSON.stringify(data)}\n\n`);
         } catch (error) {
             console.error('Erreur lors de l\'envoi des données SSE statut alarme:', error);
