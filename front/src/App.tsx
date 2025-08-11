@@ -1,15 +1,17 @@
+import React, { useEffect } from 'react';
 import './App.css';
 import { Outlet, useLocation } from 'react-router-dom';
 import Header from './layouts/Header';
 import { config } from '../config';
-import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';  
+import { useDispatch, useSelector } from 'react-redux';
 import { setAlarmStatus } from './store/user';
 import { AlarmStatusTuple } from './store/user';
+import { State, userSelector } from './store/selector';
+import { logout, UserState } from './store/user';
 
 function App() {
     const isNotLoginPage = useLocation().pathname !== '/login';
-    const isConnected = true;
+    const user = useSelector<State, UserState>(userSelector);
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -20,11 +22,28 @@ function App() {
         return () => {
             eventSource.close();
         };
-    }, []);
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (!user.token || !user.tokenExpiry) return;
+
+        const now = Date.now();
+        if (now >= user.tokenExpiry) {
+            dispatch(logout());
+            return;
+        }
+
+        const msUntilExpiry = user.tokenExpiry - now;
+        const timer = setTimeout(() => {
+            dispatch(logout());
+        }, msUntilExpiry);
+
+        return () => clearTimeout(timer);
+    }, [user.token, user.tokenExpiry, dispatch]);
     
     return (
         <div className="app">
-            {isConnected && isNotLoginPage && <Header />}
+            {isNotLoginPage && <Header />}
             <div id="container">
                 <Outlet />
             </div>

@@ -159,3 +159,15 @@
     background: #fff;
     color: #000000;
 }
+
+.logout-button {
+    background: #ff7875;
+    color: #000;
+    border: none;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background: #ff7875;
+    color: #000;
+}

@@ -1,9 +1,22 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import './header.css';
 import logo from '../assets/image/logo.png';
+import { useDispatch, useSelector } from 'react-redux';
+import { State, userSelector } from '../store/selector';
+import { logout, setToken, UserState } from '../store/user';
 
 const Header = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const user = useSelector<State, UserState>(userSelector);
+
+    const handleLogout = () => {
+        dispatch(logout());
+        dispatch(setToken(null));
+        navigate('/login');
+    };
+
     return (
         <header className="header-header">
             <div className="header-left">
@@ -24,12 +37,16 @@ const Header = () => {
                 </NavLink>
             </nav>
             <div className="header-right">
-                <NavLink
-                    to="/account"
-                    className={({ isActive }) => isActive ? "header-link active" : "header-link"}
-                >
-                    Compte
-                </NavLink>
+                {user.isAuthenticated ? (
+                    <button className="header-link logout-button" onClick={handleLogout}>Déconnexion</button>
+                ) : (
+                    <NavLink
+                        to="/login"
+                        className={({ isActive }) => isActive ? "header-link active" : "header-link"}
+                    >
+                        Compte
+                    </NavLink>
+                )}
             </div>
         </header>
     );
