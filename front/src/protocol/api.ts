@@ -19,3 +19,28 @@ export const putAlarm = async ({ enabled, room_id }: { enabled: boolean, room_id
     });
     return res.data;
 };
+
+export const updateUser = async (userId: string, userData: { username?: string; mail?: string; password?: string }) => {
+    const token = localStorage.getItem('token');
+    const res = await api.put(`user/${userId}`, userData, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return res.data;
+};
+
+export const deleteUser = async (userId: string) => {
+    const token = localStorage.getItem('token');
+    const res = await api.delete(`user/${userId}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return res.data;
+};
+
+export const createUser = async (userData: { username: string; mail: string; password: string; role: string }) => {
+    const res = await api.post('register', userData);
+    return res.data;
+};
