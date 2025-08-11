@@ -4,8 +4,3 @@ export interface AlarmProps {
     timestamp: Date;
     userName: string;
 }
-
-export interface AlarmHistory {
-    status: 'on' | 'off';
-    timestamp: Date;
-}

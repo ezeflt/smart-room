@@ -1,10 +1,11 @@
 import './alarm.css';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { getAlarmHistory, getListIdQuery, putAlarm } from '../../protocol/api';
+import { useMutation } from '@tanstack/react-query';
+import { putAlarm } from '../../protocol/api';
 import { useDispatch, useSelector } from 'react-redux';
 import { globalSelector, State, userSelector } from '../../store/selector';
 import { GlobalState, setAlarm } from '../../store/global';
-import { UserState } from '../../store/user';
+import { AlarmStatusTuple, UserState } from '../../store/user';
+import { setAlarmStatus } from '../../store/user';
 import { useEffect, useState } from 'react';
 import { AlarmProps } from './alarm.interface';
 import { config } from '../../../config';
@@ -42,7 +43,7 @@ const Alarm = () => {
     // Retirer toute la logique d'erreur et de redirection liée au token
 
     const [alarmHistory, setAlarmHistory] = useState<AlarmProps[] | null>(null);
-    const URI = `http://${config.dns}:${config.port}/alarm/stream?${getListIdQuery(user.listId)}`;
+    const URI = `http://${config.dns}:${config.port}/alarm/stream?room_id=${user.alarmStatus[global.selectedRoom-1].id}`;
 
     // GET ALARM HISTORY (STREAM)
     useEffect(() => {
@@ -57,34 +58,37 @@ const Alarm = () => {
                 eventSource.close();
             };
         }
-    }, [global.isActivated]);
+    }, [global.isActivated, global.selectedRoom]);
 
     // HANDLE ALARM
     const handleActivateAlarm = useMutation({
         mutationFn: async () => {
-            // Envoie l'utilisateur connecté au backend
-            const token = localStorage.getItem('token');
-            await fetch(`http://${config.dns}:${config.port}/alarm/activate`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            return putAlarm({ sensorList: user.listId, enabled: true });
+            return putAlarm({ room_id: global.selectedRoom, enabled: true });
         },
-        onSettled: () => dispatch(setAlarm({ isActivated: true })),
+        onSettled: () => dispatch(
+            setAlarmStatus({ 
+                alarmStatus: user.alarmStatus.map((room, index) => ({ ...room, status: index + 1 === global.selectedRoom ? 'on' : 'off' })) as AlarmStatusTuple 
+            })
+        ),
     });
 
     const handleDesactivateAlarm = useMutation({
-        mutationFn: () => putAlarm({ sensorList: user.listId, enabled: false }),
-        onSettled: () => dispatch(setAlarm({ isActivated: false })),
+        mutationFn: () => putAlarm({ room_id: global.selectedRoom, enabled: false }),
+        onSettled: () => dispatch(
+            setAlarmStatus({ alarmStatus: user.alarmStatus.map((room, index) => ({ ...room, status: index + 1 === global.selectedRoom ? 'on' : 'off' })) as AlarmStatusTuple })
+        ),
     });
 
     return (
         <>
         <div className="container-wrapper">
-            <LargeScreen page={Page.Alarm} />
+            <LargeScreen page={Page.Alarm} onClick={() => {
+                if (global.isActivated) {
+                    handleDesactivateAlarm.mutate();
+                } else {
+                    handleActivateAlarm.mutate();
+                }
+            }} />
             <div className={`alarm-history-container ${global.isActivated ? 'on' : 'off'}`}>
                 {alarmHistory && alarmHistory.length > 0 ? (
                     alarmHistory.map((item, idx) => {

@@ -1,20 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+type AlarmStatus = { status: 'on' | 'off', id: string };
+type AlarmStatusTuple = [AlarmStatus, AlarmStatus, AlarmStatus];
+
 export interface UserState {
-    listId: {
-        id1: string;
-        id2: string;
-        id3: string;
-    };
+    alarmStatus: AlarmStatusTuple;
     email: string;
 }
 
 const initialState: UserState = {
-    listId: {
-        id1: '',
-        id2: '',
-        id3: '',
-    },
+    alarmStatus: [{ status: 'off', id: '1' }, { status: 'off', id: '2' }, { status: 'off', id: '3' }],
     email: 'test_email@gmail.com',
 };
 
@@ -22,13 +17,17 @@ export const userSlice = createSlice({
     name: 'user',
     initialState,
     reducers: {
-        setUser: (state: UserState, action: PayloadAction<{ user: UserState }>) => {
-            state = action.payload.user;
+        setEmail: (state: UserState, action: PayloadAction<{ email: string }>) => {
+            state.email = action.payload.email;
+            return state;
+        },
+        setAlarmStatus: (state: UserState, action: PayloadAction<{ alarmStatus: AlarmStatusTuple }>) => {
+            state.alarmStatus = action.payload.alarmStatus;
             return state;
         },
     },
 });
 
-export const { setUser } = userSlice.actions;
+export const { setEmail } = userSlice.actions;
 
 export default userSlice.reducer;
