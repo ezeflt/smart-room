@@ -297,4 +297,14 @@ const resetPassword = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUser, updateUser, deleteUser ,forgotPassword, resetPassword };
+// Fonction logout : côté JWT, il suffit de supprimer le token côté client
+const logout = async (req, res) => {
+    // Ici, on ne peut pas invalider un JWT côté serveur sans blacklist globale
+    // On informe juste le client de supprimer son token
+    res.status(200).json({
+        message: "Déconnexion réussie !",
+        type: "success"
+    });
+}
+
+module.exports = { register, login, getUser, updateUser, deleteUser ,forgotPassword, resetPassword, logout };
