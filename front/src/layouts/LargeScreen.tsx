@@ -1,29 +1,35 @@
 import React from 'react';
 import { LargeScreenProps, Page } from '../global.interface';
 import { useDispatch, useSelector } from 'react-redux';
-import { setAlarm, setSelectedRoom } from '../store/global';
 import { State } from '../store/selector';
-import './largeScreen.css';
+import { AlarmStatusTuple, setAlarmStatus, UserState } from '../store/user';
 
-const LargeScreen = ({ page, degreeCelcius }: LargeScreenProps) => {
+
+const LargeScreen = ({ page, degreeCelcius, onClick }: LargeScreenProps) => {
     const dispatch = useDispatch();
     const globalState = useSelector((state: State) => state.global);
+    const user = useSelector((state: State) => state.user) as UserState;
 
-    const rooms = [1, 2, 3];
-    const alarmToggleLabel = globalState.isActivated ? 'Activer' : 'Désactiver';
-
+    const rooms = user.alarmStatus;
+    const alarmToggleLabel = rooms[globalState.selectedRoom - 1].status === 'on' ? 'Activer' : 'Désactiver';
+    const alarmStatus = rooms[globalState.selectedRoom - 1].status;
     const handleClick = () => {
         if (page === Page.Alarm) {
-            dispatch(setAlarm({ isActivated: !globalState.isActivated }));
+            dispatch(setAlarmStatus({ 
+                alarmStatus: rooms.map((room, index) => ({ 
+                    ...room, 
+                    status: index + 1 === globalState.selectedRoom ? 'on' : 'off' 
+                })) as AlarmStatusTuple
+            }));
         }
     };
 
     return (
-        <div className="large-screen-container">
+        <div className="large-screen-container"
+            onClick={onClick}
+        >
             <div
-                className={`screen ${page.toLowerCase()} ${
-                    globalState.isActivated ? 'on' : 'off'
-                }`}
+                className={`screen ${page.toLowerCase()} ${alarmStatus}`}
                 onClick={handleClick}
             >
                 <span className={`text ${page.toLowerCase()}`}>
@@ -31,18 +37,18 @@ const LargeScreen = ({ page, degreeCelcius }: LargeScreenProps) => {
                 </span>
             </div>
             <div className="room-column">
-                {rooms.map((room) => (
+                {rooms.map((room, index) => (
                     <button
-                        key={room}
+                        key={index}
                         className={`room-btn${
-                            globalState.selectedRoom === room ? ' selected' : ''
+                            globalState.selectedRoom === index + 1 ? ' selected' : ''
                         }`}
                         onClick={(e) => {
                             e.stopPropagation();
-                            dispatch(setSelectedRoom(room));
+                            dispatch(setSelectedRoom(index + 1));
                         }}
                     >
-                        {room}
+                        {index + 1}
                     </button>
                 ))}
             </div>

@@ -1,5 +1,4 @@
 import './weather.css';
-import { getListIdQuery } from '../../protocol/api';
 import { useEffect, useState } from 'react';
 import { WeatherProps } from './weather.interface';
 import { useSelector } from 'react-redux';
@@ -10,6 +9,7 @@ import React from 'react';
 import RowStatistics from './RowStatistics';
 import { useLocation } from 'react-router-dom';
 import Modal from '../../atoms/Modal';
+import global from '../../store/global';
 
 const Weather = () => {
     const user = useSelector<State, UserState>(userSelector);
@@ -18,7 +18,7 @@ const Weather = () => {
     const [lastHumidity, setLastHumidity] = useState<number | null>(null);
     const [lastPressure, setLastPressure] = useState<number | null>(null);
     const [lastSensorId, setLastSensorId] = useState<string | null>(null);
-    const uri = `http://${config.dns}:${config.port}/weather/stream?${getListIdQuery(user.listId)}`;
+    const uri = `http://${config.dns}:${config.port}/weather/stream?room_id=${user.alarmStatus[global.selectedRoom-1].id}`;
     const location = useLocation();
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMessage, setModalMessage] = useState<string | null>(null);
@@ -70,7 +70,7 @@ const Weather = () => {
         return () => {
             eventSource.close();
         };
-    }, [lastTemperature, lastHumidity, lastPressure, lastSensorId]);
+    }, [lastTemperature, lastHumidity, lastPressure, lastSensorId, global.selectedRoom]);
 
   return (
     <div style={{ padding: '2rem' }}>

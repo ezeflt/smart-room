@@ -10,4 +10,5 @@ export enum Page {
 export interface LargeScreenProps {
     page: Page;
     degreeCelcius?: number;
+    onClick?: () => void;
 }
