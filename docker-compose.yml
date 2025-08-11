@@ -21,7 +21,7 @@ services:
     volumes:
       - ./back:/app
       - /app/node_modules
-    command: npm run dev
+    command: sh -c "npm ci && npm run dev"
 
 #pour lancer le container : docker compose up --build
 #pour stopper le container : docker compose down

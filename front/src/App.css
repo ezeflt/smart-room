@@ -29,7 +29,10 @@ html, body {
 }
 
 #container {
-    display: flex;
     height: 100vh;
     width: 100vw;
+}
+
+.page-alarm #container {
+    display: flex;
 }

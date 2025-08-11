@@ -26,9 +26,13 @@ const LargeScreen = ({ page, degreeCelcius }: LargeScreenProps) => {
                 }`}
                 onClick={handleClick}
             >
-                <span className={`text ${page.toLowerCase()}`}>
-                    {page === Page.Alarm ? alarmToggleLabel : `${degreeCelcius} °C`}
-                </span>
+                {page === Page.Weather ? (
+                    <div className={`text ${page.toLowerCase()}`}>
+                        <div style={{ fontSize: '150px', lineHeight: 1 }}>{degreeCelcius ?? '--'} °C</div>
+                    </div>
+                ) : (
+                    <span className={`text ${page.toLowerCase()}`}>{alarmToggleLabel}</span>
+                )}
             </div>
             <div className="room-column">
                 {rooms.map((room) => (

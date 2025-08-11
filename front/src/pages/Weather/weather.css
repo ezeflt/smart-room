@@ -1,1 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Jaro:opsz@6..72&display=swap');
+
+.weather-page { padding: 2rem; }
+.weather-title { margin: 0 0 1rem 0; }
+
+.weather-large { 
+  width: 100%; 
+  margin-bottom: 1rem; 
+  /* Donne une hauteur explicite pour que .screen (height:100%) puisse se caler */
+  min-height: 70%;
+  height: clamp(260px, 335px, 560px);
+}
+.weather-large .large-screen-container { height: 90%; }
+.weather-stats { width: 100%; }
+
+.latest-item { padding: 0.5rem 0; }
+
+@media (min-width: 900px) {
+  .weather-grid { grid-template-columns: 1.2fr 1fr; }
+}

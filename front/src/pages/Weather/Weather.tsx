@@ -10,6 +10,8 @@ import React from 'react';
 import RowStatistics from './RowStatistics';
 import { useLocation } from 'react-router-dom';
 import Modal from '../../atoms/Modal';
+import LargeScreen from '../../layouts/LargeScreen';
+import { Page } from '../../global.interface';
 
 const Weather = () => {
     const user = useSelector<State, UserState>(userSelector);
@@ -17,7 +19,7 @@ const Weather = () => {
     const [lastTemperature, setLastTemperature] = useState<number | null>(null);
     const [lastHumidity, setLastHumidity] = useState<number | null>(null);
     const [lastPressure, setLastPressure] = useState<number | null>(null);
-    const [lastSensorId, setLastSensorId] = useState<string | null>(null);
+    const [lastSensorId, setLastSensorId] = useState<string | number | null>(null);
     const uri = `http://${config.dns}:${config.port}/weather/stream?${getListIdQuery(user.listId)}`;
     const location = useLocation();
     const [modalOpen, setModalOpen] = useState(false);
@@ -37,46 +39,48 @@ const Weather = () => {
     useEffect(() => {
         const eventSource = new EventSource(uri);
         eventSource.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data && data.length > 0) {
-                // Traitement des données pour chaque capteur
-                data.forEach((sensorData, index) => {
-                    const currentTemp = sensorData.temperature;
-                    const currentHumidity = sensorData.humidity;
-                    const currentPressure = sensorData.pressure;
-                    const currentSensorId = sensorData.sensor_id;
-                    
-                    // Mise à jour des dernières valeurs pour le premier capteur
-                    if (index === 0) {
-                        if (currentTemp !== lastTemperature) {
-                            setLastTemperature(currentTemp);
-                        }
-                        
-                        if (currentHumidity !== lastHumidity) {
-                            setLastHumidity(currentHumidity);
-                        }
-                        
-                        if (currentPressure !== lastPressure) {
-                            setLastPressure(currentPressure);
-                        }
-                        
-                        setLastSensorId(currentSensorId);
-                    }
+            try {
+                const raw = JSON.parse(event.data);
+                const latest = Array.isArray(raw) ? (raw[0] ?? null) : raw;
+                if (!latest) return;
+
+                const currentTemp = latest.temperature;
+                const currentHumidity = latest.humidity;
+                const currentPressure = latest.pressure;
+                const currentSensorId = latest.sensor_id;
+                const timestamp = latest.get_time || latest.timestamp || new Date().toISOString();
+
+                if (currentTemp !== lastTemperature) setLastTemperature(currentTemp);
+                if (currentHumidity !== lastHumidity) setLastHumidity(currentHumidity);
+                if (currentPressure !== lastPressure) setLastPressure(currentPressure);
+                if (currentSensorId !== lastSensorId) setLastSensorId(currentSensorId);
+
+                setWeatherData({
+                    temperature: currentTemp,
+                    humidity: currentHumidity,
+                    pressure: currentPressure,
+                    sensor_id: currentSensorId,
+                    timestamp,
                 });
+            } catch (e) {
+                console.error('Erreur de parsing SSE weather:', e);
             }
-            setWeatherData(data);
         };
 
         return () => {
             eventSource.close();
         };
-    }, [lastTemperature, lastHumidity, lastPressure, lastSensorId]);
+    }, [uri, lastTemperature, lastHumidity, lastPressure, lastSensorId]);
 
   return (
-    <div style={{ padding: '2rem' }}>
-        <Modal open={modalOpen} onClose={() => setModalOpen(false)} message={modalMessage || ''} />
-        <h1> Météo :</h1>
-      <RowStatistics />
+    <div className="weather-page">
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} message={modalMessage || ''} />
+      <div className="weather-large">
+        <LargeScreen page={Page.Weather} degreeCelcius={lastTemperature ?? undefined} />
+      </div>
+      <div className="weather-stats">
+        <RowStatistics humidity={lastHumidity} pressure={lastPressure} />
+      </div>
     </div>
   );
 }

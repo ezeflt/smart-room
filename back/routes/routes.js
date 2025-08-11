@@ -36,7 +36,14 @@ router.get("/weather/stream", (req, res) => {
     // Envoi initial des données
     const sendData = async () => {
         try {
-            const data = await SensorStat.find().sort({ get_time: -1 }).limit(9);
+            const data = {
+                temperature: 35,
+                humidity: 50,
+                pressure: 900,
+                get_time: new Date().toISOString(),
+                sensor_id: 1
+            }
+            // const data = await SensorStat.find().sort({ get_time: -1 }).limit(9);
             res.write(`data: ${JSON.stringify(data)}\n\n`);
         } catch (error) {
             console.error('Erreur lors de l\'envoi des données SSE:', error);
