@@ -3,6 +3,8 @@ import { LargeScreenProps, Page } from '../global.interface';
 import { useDispatch, useSelector } from 'react-redux';
 import { State } from '../store/selector';
 import { AlarmStatusTuple, setAlarmStatus, UserState } from '../store/user';
+import { setSelectedRoom } from '../store/global';
+import './largeScreen.css';
 
 
 const LargeScreen = ({ page, degreeCelcius, onClick }: LargeScreenProps) => {

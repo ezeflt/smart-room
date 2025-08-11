@@ -2,17 +2,18 @@ import './weather.css';
 import { useEffect, useState } from 'react';
 import { WeatherProps } from './weather.interface';
 import { useSelector } from 'react-redux';
-import { State, userSelector } from '../../store/selector';
+import { globalSelector, State, userSelector } from '../../store/selector';
 import { UserState } from '../../store/user';
 import { config } from '../../../config';
 import React from 'react';
 import RowStatistics from './RowStatistics';
 import { useLocation } from 'react-router-dom';
 import Modal from '../../atoms/Modal';
-import global from '../../store/global';
+import { GlobalState } from '../../store/global';
 
 const Weather = () => {
     const user = useSelector<State, UserState>(userSelector);
+    const global = useSelector<State, GlobalState>(globalSelector);
     const [weatherData, setWeatherData] = useState<WeatherProps | null>(null);
     const [lastTemperature, setLastTemperature] = useState<number | null>(null);
     const [lastHumidity, setLastHumidity] = useState<number | null>(null);
@@ -70,7 +71,7 @@ const Weather = () => {
         return () => {
             eventSource.close();
         };
-    }, [lastTemperature, lastHumidity, lastPressure, lastSensorId, global.selectedRoom]);
+    }, [lastTemperature, lastHumidity, lastPressure, lastSensorId]);
 
   return (
     <div style={{ padding: '2rem' }}>
