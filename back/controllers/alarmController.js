@@ -35,7 +35,9 @@ const activate = async (req, res) => {
 
 const deactivate = async (req, res) => {
   try {
-    const { user_id, room_id } = req.body;
+    const { room_id } = req.body;
+    const user_id = req.user.userId;
+
     if (!user_id || !room_id) {
       return res
         .status(400)
@@ -59,11 +61,11 @@ const deactivate = async (req, res) => {
   }
 };
 
-const historic = async (req, res) => {
+const historic = async () => {
   try {
     const historique = await Alarm.find()
       .populate("user_id", "username mail")
-      .populate("room_id", "name")
+      .populate("room_id", "name")      
       .sort({ timestamp: -1 });
     console.log("historique", historique);
 
@@ -81,9 +83,9 @@ const historic = async (req, res) => {
       },
     }));
 
-    res.json(formatted);
+    return formatted;
   } catch (err) {
-    res.status(500).json({ error: "Erreur serveur", details: err.message });
+    throw err;
   }
 };
 
