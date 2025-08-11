@@ -18,5 +18,5 @@ const globalSlice = createSlice({
     },
 });
 
-export const { setAlarm, setSelectedRoom } = globalSlice.actions;
+export const { setSelectedRoom } = globalSlice.actions;
 export default globalSlice.reducer;

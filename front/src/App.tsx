@@ -2,9 +2,10 @@ import './App.css';
 import { Outlet, useLocation } from 'react-router-dom';
 import Header from './layouts/Header';
 import { config } from '../config';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';  
-import { AlarmStatusTuple, setAlarmStatus } from './store/user';
+import { setAlarmStatus } from './store/user';
+import { AlarmStatusTuple } from './store/user';
 
 function App() {
     const isNotLoginPage = useLocation().pathname !== '/login';

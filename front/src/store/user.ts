@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-type AlarmStatus = { status: 'on' | 'off', id: string };
-type AlarmStatusTuple = [AlarmStatus, AlarmStatus, AlarmStatus];
+export type AlarmStatus = { status: 'on' | 'off', id: string };
+export type AlarmStatusTuple = [AlarmStatus, AlarmStatus, AlarmStatus];
 
 export interface UserState {
     alarmStatus: AlarmStatusTuple;
@@ -28,6 +28,6 @@ export const userSlice = createSlice({
     },
 });
 
-export const { setEmail } = userSlice.actions;
+export const { setEmail, setAlarmStatus } = userSlice.actions;
 
 export default userSlice.reducer;

@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { putAlarm } from '../../protocol/api';
 import { useDispatch, useSelector } from 'react-redux';
 import { globalSelector, State, userSelector } from '../../store/selector';
-import { GlobalState, setAlarm } from '../../store/global';
+import { GlobalState } from '../../store/global';
 import { AlarmStatusTuple, UserState } from '../../store/user';
 import { setAlarmStatus } from '../../store/user';
 import { useEffect, useState } from 'react';
@@ -47,7 +47,7 @@ const Alarm = () => {
 
     // GET ALARM HISTORY (STREAM)
     useEffect(() => {
-        if (global.isActivated) {
+        if (user.alarmStatus[global.selectedRoom-1].status === 'on') {
             const eventSource = new EventSource(URI);
             eventSource.onmessage = (event) => {
                 const data = JSON.parse(event.data);
@@ -58,7 +58,7 @@ const Alarm = () => {
                 eventSource.close();
             };
         }
-    }, [global.isActivated, global.selectedRoom]);
+    }, [user.alarmStatus[global.selectedRoom-1].status, global.selectedRoom]);
 
     // HANDLE ALARM
     const handleActivateAlarm = useMutation({
@@ -83,13 +83,13 @@ const Alarm = () => {
         <>
         <div className="container-wrapper">
             <LargeScreen page={Page.Alarm} onClick={() => {
-                if (global.isActivated) {
+                if (user.alarmStatus[global.selectedRoom-1].status === 'on') {
                     handleDesactivateAlarm.mutate();
                 } else {
                     handleActivateAlarm.mutate();
                 }
             }} />
-            <div className={`alarm-history-container ${global.isActivated ? 'on' : 'off'}`}>
+            <div className={`alarm-history-container ${user.alarmStatus[global.selectedRoom-1].status === 'on' ? 'on' : 'off'}`}>
                 {alarmHistory && alarmHistory.length > 0 ? (
                     alarmHistory.map((item, idx) => {
                         const date = new Date(item.timestamp);
