@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import './login.css';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setToken, setTokenExpiry } from '../../store/user';
 
 const Login = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [error, setError] = useState<string>('');
@@ -21,7 +24,14 @@ const Login = () => {
             setError('Please enter a valid email');
             return;
         }
- 
+        
+        // Simulate receiving a token from API and store it
+        const fakeToken = `token-${Date.now()}`;
+        const twoHoursMs = 2 * 60 * 60 * 1000;
+        const expiry = Date.now() + twoHoursMs;
+        dispatch(setToken(fakeToken));
+        dispatch(setTokenExpiry(expiry));
+
         setError('');
         navigate('/alarm');
     };
