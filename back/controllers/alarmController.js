@@ -2,6 +2,7 @@ const Alarm = require("../models/alarm.js");
 
 const activate = async (req, res) => {
   try {
+    
     const { room_id } = req.body;
     const user_id = req.user.userId;
 
@@ -19,7 +20,7 @@ const activate = async (req, res) => {
     });
 
     await alarm.save();
-
+    console.log("Alarm activated:", alarm);
     res.status(201).json({
       message: "Alarme activée avec succès",
       alarm,
@@ -48,7 +49,7 @@ const deactivate = async (req, res) => {
     }
     const alarm = new Alarm({ action: "desactive", user_id, room_id });
     await alarm.save();
-
+    console.log("Alarm deactivated:", alarm);
     return res.status(201).json({ message: "Alarme désactivée", alarm });
   } catch (err) {
     console.error("DEACTIVATE ERROR:", err);
@@ -67,22 +68,14 @@ const historic = async () => {
       .populate("user_id", "username mail")
       .populate("room_id", "name")      
       .sort({ timestamp: -1 });
-    console.log("historique", historique);
-
+ 
     const formatted = historique.map((entry) => ({
-      action: entry.action,
       timestamp: entry.timestamp,
-      user_id: {
-        _id: entry.user_id._id,
-        username: entry.user_id.username,
-        mail: entry.user_id.mail,
-      },
-      room_id: {
-        _id: entry.room_id._id,
-        name: entry.room_id.name,
-      },
+      room: entry.room_id?._id,
+      action: entry.action,
+      userName: entry.user_id?.username
     }));
-
+  
     return formatted;
   } catch (err) {
     throw err;
