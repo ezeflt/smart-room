@@ -20,7 +20,6 @@ const activate = async (req, res) => {
     });
 
     await alarm.save();
-    console.log("Alarm activated:", alarm);
     res.status(201).json({
       message: "Alarme activée avec succès",
       alarm,
@@ -49,7 +48,6 @@ const deactivate = async (req, res) => {
     }
     const alarm = new Alarm({ action: "desactive", user_id, room_id });
     await alarm.save();
-    console.log("Alarm deactivated:", alarm);
     return res.status(201).json({ message: "Alarme désactivée", alarm });
   } catch (err) {
     console.error("DEACTIVATE ERROR:", err);
