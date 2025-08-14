@@ -6,7 +6,7 @@ import { globalSelector, State, userSelector } from '../../store/selector';
 import { GlobalState } from '../../store/global';
 import { AlarmStatusTuple, UserState } from '../../store/user';
 import { setAlarmStatus } from '../../store/user';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { AlarmProps } from './alarm.interface';
 import { config } from '../../../config';
 import React from 'react';
@@ -19,26 +19,30 @@ const Alarm = () => {
     const user = useSelector<State, UserState>(userSelector);
     const global = useSelector<State, GlobalState>(globalSelector);
     const navigate = useNavigate();
+    const wasAuthenticated = useRef(user.isAuthenticated);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        let alert = '';
-        if (!token) {
-            alert = 'Veuillez vous connecter pour accéder à la page Alarme.';
-        } else {
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                if (payload.exp * 1000 < Date.now()) {
-                    alert = 'Votre session a expiré, veuillez vous reconnecter.';
-                }
-            } catch {
-                alert = 'Token invalide, veuillez vous reconnecter.';
+        // Vérification de l'authentification via l'état Redux
+        if (!user.isAuthenticated || !user.token || !user.tokenExpiry) {
+            // Si l'utilisateur était authentifié avant et ne l'est plus, c'est une déconnexion
+            if (wasAuthenticated.current) {
+                navigate('/weather');
+            } else {
+                // Sinon, c'est un accès non autorisé
+                navigate('/login');
             }
+            return;
         }
-        if (alert) {
-            navigate('/weather', { state: { alert } });
+
+        // Vérification de l'expiration du token
+        if (Date.now() >= user.tokenExpiry) {
+            navigate('/login');
+            return;
         }
-    }, [navigate]);
+
+        // Mise à jour de l'état précédent
+        wasAuthenticated.current = user.isAuthenticated;
+    }, [user.isAuthenticated, user.token, user.tokenExpiry, navigate]);
 
     // Retirer toute la logique d'erreur et de redirection liée au token
 
@@ -101,7 +105,7 @@ const Alarm = () => {
                         const action = item.action === 'on' ? 'activé' : 'désactivé';
                         return (
                             <span key={idx} className="alarm-history-item">
-                                {`${heure} ${jour} - L’alarme de la salle ${item.room} a été ${action} par ${item.userName}`}
+                                {`${heure} ${jour} - L'alarme de la salle ${item.room} a été ${action} par ${item.userName}`}
                             </span>
                         );
                     })
