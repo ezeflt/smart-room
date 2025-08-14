@@ -57,7 +57,7 @@ const alarmStream = (req, res) => {
     const sendData = async () => {
         try {
             // Mock data instead of database query
-            const data = await historic();
+            const data = await historic(room_id);
             res.write(`data: ${JSON.stringify(data)}\n\n`);
         } catch (error) {
             console.error('Erreur lors de l\'envoi des données SSE alarme:', error);
@@ -88,9 +88,29 @@ const roomStatusStream = (req, res) => {
     // Envoi initial des données
     const sendData = async () => {
         try {
-            // Mock data pour le statut des alarmes par salle
-            const data = // TODO: get data from database
-            res.write(`data: ${JSON.stringify(data)}\n\n`);
+            // Récupérer l'historique des alarmes pour toutes les rooms
+            const Alarm = require("../models/alarm.js");
+            const Room = require("../models/room.js");
+            
+            // Récupérer toutes les rooms
+            const rooms = await Room.find({});
+            
+            // Pour chaque room, récupérer la dernière alarme
+            const roomStatuses = await Promise.all(
+                rooms.map(async (room) => {
+                    const lastAlarm = await Alarm.findOne({ room_id: room._id })
+                        .sort({ timestamp: -1 })
+                        .populate('user_id', 'username');
+                    
+                    return {
+                        room_id: room._id,
+                        status: getOnOff(lastAlarm ? lastAlarm.action : "off"),
+                        id: room._id
+                    };
+                })
+            );
+            
+            res.write(`data: ${JSON.stringify(roomStatuses)}\n\n`);
         } catch (error) {
             console.error('Erreur lors de l\'envoi des données SSE statut alarme:', error);
         }
@@ -106,6 +126,14 @@ const roomStatusStream = (req, res) => {
         clearInterval(interval);
     });
 };
+
+function getOnOff(action) {
+    if (action === "active") {
+        return "on";
+    } else {
+        return "off";
+    }
+}
 
 module.exports = {
     weatherStream,

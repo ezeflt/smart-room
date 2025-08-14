@@ -60,9 +60,9 @@ const deactivate = async (req, res) => {
   }
 };
 
-const historic = async () => {
+const historic = async (room_id) => {
   try {
-    const historique = await Alarm.find()
+    const historique = await Alarm.find({ room_id: room_id })
       .populate("user_id", "username mail")
       .populate("room_id", "name")      
       .sort({ timestamp: -1 });
