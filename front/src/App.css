@@ -1,12 +1,10 @@
 /* App.css */
 
-body,
-html,
-#root {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    font-family: sans-serif;
+html, body {
+  width: 100%;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 .app {
@@ -26,26 +24,25 @@ html,
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    opacity: 0.1;
+    opacity: 0.2;
     z-index: -1;
 }
 
 #container {
     display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: auto;
+    height: 100vh;
+    width: 100vw;
 }
 
-.page-wrapper {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    max-height: -webkit-fill-available;
-    overflow-x: scroll;
+/* Portfolio page styles */
+.portfolio-page {
+    background-color: transparent !important;
 }
 
-.page-content {
-    padding: 30px;
-    flex: 1;
+.portfolio-page::before {
+    display: none !important;
+}
+
+.portfolio-page #container {
+    background: transparent;
 }

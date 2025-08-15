@@ -1,17 +1,53 @@
+import React, { useEffect } from 'react';
 import './App.css';
-import { Outlet } from 'react-router-dom';
-import Navbar from './layouts/Navbar';
+import { Outlet, useLocation } from 'react-router-dom';
+import Header from './layouts/Header';
+import { config } from '../config';
+import { useDispatch, useSelector } from 'react-redux';
+import { setAlarmStatus } from './store/user';
+import { AlarmStatusTuple } from './store/user';
+import { State, userSelector } from './store/selector';
+import { logout, UserState } from './store/user';
 
 function App() {
+    const location = useLocation();
+    const isNotLoginPage = location.pathname !== '/login';
+    const isPortfolioPage = location.pathname === '/';
+    const user = useSelector<State, UserState>(userSelector);
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        const eventSource = new EventSource(`http://${config.dns}:${config.port}/room/status/stream`);
+        eventSource.onmessage = (event) => {
+            dispatch(setAlarmStatus({ alarmStatus: JSON.parse(event.data) as AlarmStatusTuple }));
+        };
+        return () => {
+            eventSource.close();
+        };
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (!user.token || !user.tokenExpiry) return;
+
+        const now = Date.now();
+        if (now >= user.tokenExpiry) {
+            dispatch(logout());
+            return;
+        }
+
+        const msUntilExpiry = user.tokenExpiry - now;
+        const timer = setTimeout(() => {
+            dispatch(logout());
+        }, msUntilExpiry);
+
+        return () => clearTimeout(timer);
+    }, [user.token, user.tokenExpiry, dispatch]);
+    
     return (
-        <div className="app">
-            <Navbar />
+        <div className={`app ${isPortfolioPage ? 'portfolio-page' : ''}`}>
+            {isNotLoginPage && !isPortfolioPage && <Header />}
             <div id="container">
-                <div className="page-wrapper">
-                    <div className="page-content">
-                        <Outlet />
-                    </div>
-                </div>
+                <Outlet />
             </div>
         </div>
     );

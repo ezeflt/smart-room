@@ -1,51 +1,115 @@
 import './alarm.css';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { getAlarmHistory, getListIdQuery, putAlarm } from '../../protocol/api';
+import { useMutation } from '@tanstack/react-query';
+import { putAlarm } from '../../protocol/api';
 import { useDispatch, useSelector } from 'react-redux';
 import { globalSelector, State, userSelector } from '../../store/selector';
-import { GlobalState, setAlarm } from '../../store/global';
-import { UserState } from '../../store/user';
+import { GlobalState } from '../../store/global';
+import { AlarmStatusTuple, UserState } from '../../store/user';
+import { setAlarmStatus } from '../../store/user';
 import { useEffect, useState } from 'react';
 import { AlarmProps } from './alarm.interface';
 import { config } from '../../../config';
 import React from 'react';
+import LargeScreen from '../../layouts/LargeScreen';
+import { Page } from '../../global.interface';
+import { useNavigate } from 'react-router-dom';
 
 const Alarm = () => {
     const dispatch = useDispatch();
     const user = useSelector<State, UserState>(userSelector);
     const global = useSelector<State, GlobalState>(globalSelector);
-
-    const [alarm, setAlarAlarm] = useState<AlarmProps| null>(null);
-    const URI = `http://${config.dns}:${config.port}/alarm/stream?${getListIdQuery(user.listId)}`;
-
-    const alarmHistory = useQuery({
-        queryKey: ['getAlarm', user.listId],
-        queryFn: () => getAlarmHistory(user.listId),
-    });
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const eventSource = new EventSource(URI);
-        eventSource.onmessage = (event) => setAlarAlarm(JSON.parse(event.data));
+        const token = localStorage.getItem('token');
+        let alert = '';
+        if (!token) {
+            alert = 'Veuillez vous connecter pour accéder à la page Alarme.';
+        } else {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.exp * 1000 < Date.now()) {
+                    alert = 'Votre session a expiré, veuillez vous reconnecter.';
+                }
+            } catch {
+                alert = 'Token invalide, veuillez vous reconnecter.';
+            }
+        }
+        if (alert) {
+            navigate('/weather', { state: { alert } });
+        }
+    }, [navigate]);
 
-        return () => {
-            eventSource.close();
-        };
-    }, []);
+    // Retirer toute la logique d'erreur et de redirection liée au token
 
+    const [alarmHistory, setAlarmHistory] = useState<AlarmProps[] | null>(null);
+    const URI = `http://${config.dns}:${config.port}/alarm/stream?room_id=${user.alarmStatus[global.selectedRoom-1].id}`;
+
+    // GET ALARM HISTORY (STREAM)
+    useEffect(() => {
+        if (user.alarmStatus[global.selectedRoom-1].status === 'on') {
+            const eventSource = new EventSource(URI);
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                setAlarmHistory(data);
+            };
+
+            return () => {
+                eventSource.close();
+            };
+        }
+    }, [user.alarmStatus[global.selectedRoom-1].status, global.selectedRoom]);
+
+    // HANDLE ALARM
     const handleActivateAlarm = useMutation({
-        mutationFn: () => putAlarm({ sensorList: user.listId, enabled: true }),
-        onSettled: () => dispatch(setAlarm({ isActivated: true })),
+        mutationFn: async () => {
+            return putAlarm({ room_id: global.selectedRoom, enabled: true });
+        },
+        onSettled: () => dispatch(
+            setAlarmStatus({ 
+                alarmStatus: user.alarmStatus.map((room, index) => ({ ...room, status: index + 1 === global.selectedRoom ? 'on' : 'off' })) as AlarmStatusTuple 
+            })
+        ),
     });
 
-    const handleDeactivateAlarm = useMutation({
-        mutationFn: () => putAlarm({ sensorList: user.listId, enabled: false }),
-        onSettled: () => dispatch(setAlarm({ isActivated: false })),
+    const handleDesactivateAlarm = useMutation({
+        mutationFn: () => putAlarm({ room_id: global.selectedRoom, enabled: false }),
+        onSettled: () => dispatch(
+            setAlarmStatus({ alarmStatus: user.alarmStatus.map((room, index) => ({ ...room, status: index + 1 === global.selectedRoom ? 'on' : 'off' })) as AlarmStatusTuple })
+        ),
     });
 
     return (
         <>
-            <h1>Alarm</h1>
-            <span>Alarm is activated: {global.alarm.isActivated}</span>
+        <div className="container-wrapper">
+            <LargeScreen page={Page.Alarm} onClick={() => {
+                if (user.alarmStatus[global.selectedRoom-1].status === 'on') {
+                    handleDesactivateAlarm.mutate();
+                } else {
+                    handleActivateAlarm.mutate();
+                }
+            }} />
+            <div className={`alarm-history-container ${user.alarmStatus[global.selectedRoom-1].status === 'on' ? 'on' : 'off'}`}>
+                {alarmHistory && alarmHistory.length > 0 ? (
+                    alarmHistory.map((item, idx) => {
+                        const date = new Date(item.timestamp);
+                        const heure = date.toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        });
+                        const jour = date.toLocaleDateString();
+                        const action = item.action === 'on' ? 'activé' : 'désactivé';
+                        return (
+                            <span key={idx} className="alarm-history-item">
+                                {`${heure} ${jour} - L’alarme de la salle ${item.room} a été ${action} par ${item.userName}`}
+                            </span>
+                        );
+                    })
+                ) : (
+                    <div className="alarm-history-empty">Aucune alarme enregistrée</div>
+                )}
+            </div>
+        </div>
         </>
     );
 };

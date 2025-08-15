@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-
 const userSensorSchema = new mongoose.Schema({
   user_id: {
     type: mongoose.Schema.Types.ObjectId,

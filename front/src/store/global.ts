@@ -1,28 +1,22 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
 export interface GlobalState {
-    alarm: {
-        isActivated: boolean;
-    };
+    selectedRoom: number;
 }
 
 const initialState: GlobalState = {
-    alarm: {
-        isActivated: false,
-    },
+    selectedRoom: 1,
 };
 
-export const userSlice = createSlice({
+const globalSlice = createSlice({
     name: 'global',
     initialState,
     reducers: {
-        setAlarm: (state: GlobalState, action: PayloadAction<GlobalState['alarm']>) => {
-            state.alarm = action.payload;
-            return state;
+        setSelectedRoom(state, action) {
+            state.selectedRoom = action.payload;
         },
     },
 });
 
-export const { setAlarm } = userSlice.actions;
-
-export default userSlice.reducer;
+export const { setSelectedRoom } = globalSlice.actions;
+export default globalSlice.reducer;
