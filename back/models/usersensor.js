@@ -7,8 +7,7 @@ const userSensorSchema = new mongoose.Schema({
     required: true,
   },
   sensor_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Sensor",
+    type: Number,
     required: true,
   },
 });
@@ -16,4 +15,5 @@ const userSensorSchema = new mongoose.Schema({
 // Assure unicité user-sensor
 userSensorSchema.index({ user_id: 1, sensor_id: 1 }, { unique: true });
 
-export default mongoose.model("UserSensor", userSensorSchema);
+const UserSensor = mongoose.model("UserSensor", userSensorSchema);
+module.exports = UserSensor;

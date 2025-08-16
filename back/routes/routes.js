@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { register ,getUser,login, deleteUser, updateUser,forgotPassword, resetPassword, logout  } = require("../controllers/userController.js");
+const { getRooms, getUserRooms, assignUserRooms } = require("../controllers/roomController.js");
 const { mqttController } = require("../controllers/mqttController.js");
 const { setAlarmUser } = require("../controllers/mqttAlarmController.js");
 const { authenticateToken } = require("../middleware/auth.js");
@@ -26,5 +27,10 @@ router.get("/room/status/stream", roomStatusStream);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/logout", logout);
+
+// Routes pour la gestion des salles
+router.get("/rooms", getRooms);
+router.get("/user/:userId/rooms", authenticateToken, getUserRooms);
+router.post("/user/:userId/rooms", authenticateToken, assignUserRooms);
 
 module.exports = router;
