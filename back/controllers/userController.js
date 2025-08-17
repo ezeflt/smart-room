@@ -2,6 +2,8 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
+const UserSensor = require("../models/usersensor");
+const RoomSensor = require("../models/roomsensor");
 
 const register = async (req, res) => {
     const { username, mail, password, confirmPassword } = req.body;
@@ -70,6 +72,15 @@ const login = async (req, res) => {
             { expiresIn: '24h' }
         );
         console.log("Token généré :", token);
+
+        // Récupération des salles accessibles à l'utilisateur
+        const userSensors = await UserSensor.find({ user_id: user._id }).select('sensor_id');
+        const sensorIds = userSensors.map(us => us.sensor_id);
+        
+        const roomSensors = await RoomSensor.find({ sensor_id: { $in: sensorIds } }).select('room_id');
+        const roomIds = roomSensors.map(rs => rs.room_id);
+
+        
         // Envoi du token et des informations utilisateur
         res.status(200).json({
             message: "Connexion réussie!",
@@ -79,7 +90,8 @@ const login = async (req, res) => {
             user: {
                 id: user._id,
                 username: user.username,
-                mail: user.mail
+                mail: user.mail,
+                roomIds: roomIds
             }
         });
     } catch (err) {
@@ -132,6 +144,12 @@ const updateUser = async (req, res) => {
             { new: true, runValidators: true }
         );
 
+        const userSensors = await UserSensor.find({ user_id: user._id }).select('sensor_id');
+        const sensorIds = userSensors.map(us => us.sensor_id);
+        
+        const roomSensors = await RoomSensor.find({ sensor_id: { $in: sensorIds } }).select('room_id');
+        const roomIds = roomSensors.map(rs => rs.room_id);
+
         if (!updatedUser) {
             return res.status(404).json({
                 message: "Utilisateur non trouvé",
@@ -145,7 +163,8 @@ const updateUser = async (req, res) => {
             user: {
                 id: updatedUser._id,
                 username: updatedUser.username,
-                mail: updatedUser.mail
+                mail: updatedUser.mail,
+                roomIds: roomIds
             }
         });
     } catch (err) {
@@ -297,4 +316,15 @@ const logout = async (req, res) => {
     });
 }
 
-module.exports = { register, login, getUser, updateUser, deleteUser ,forgotPassword, resetPassword, logout };
+
+
+module.exports = { 
+    register, 
+    login, 
+    getUser, 
+    updateUser, 
+    deleteUser, 
+    forgotPassword, 
+    resetPassword, 
+    logout
+};

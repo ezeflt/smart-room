@@ -12,6 +12,11 @@ interface User {
     role: string;
 }
 
+interface Room {
+    _id: string;
+    name: string;
+}
+
 const BackOffice = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
@@ -26,6 +31,10 @@ const BackOffice = () => {
         confirmPassword: '',
         role: 'client'
     });
+    const [rooms, setRooms] = useState<Room[]>([]);
+    const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
+    const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState<string>('');
 
     const { data: usersData, isLoading, error: queryError } = useQuery({
         queryKey: ['users'],
@@ -38,12 +47,33 @@ const BackOffice = () => {
         },
     });
 
+    const { data: roomsData } = useQuery({
+        queryKey: ['rooms'],
+        queryFn: async () => {
+            const response = await fetch(`http://${config.dns}:${config.port}/rooms`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Erreur lors de la récupération des salles');
+            }
+            return response.json();
+        },
+    });
+
     React.useEffect(() => {
         if (usersData) {
             console.log('Données reçues de l\'API:', usersData);
             setUsers(usersData.users || usersData);
         }
     }, [usersData]);
+
+    React.useEffect(() => {
+        if (roomsData) {
+            setRooms(roomsData.rooms || []);
+        }
+    }, [roomsData]);
 
     // Mutation pour créer un utilisateur
     const createUserMutation = useMutation({
@@ -105,6 +135,32 @@ const BackOffice = () => {
         }
     });
 
+    const assignRoomsMutation = useMutation({
+        mutationFn: async ({ userId, roomIds }: { userId: string; roomIds: string[] }) => {
+            const response = await fetch(`http://${config.dns}:${config.port}/user/${userId}/rooms`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                },
+                body: JSON.stringify({ roomIds })
+            });
+            if (!response.ok) {
+                throw new Error('Erreur lors de l\'assignation des salles');
+            }
+            return response.json();
+        },
+        onSuccess: () => {
+            setIsRoomModalOpen(false);
+            setSelectedRooms([]);
+            setCurrentUserId('');
+        },
+        onError: (error) => {
+            console.error('Erreur lors de l\'assignation des salles:', error);
+            alert('Erreur lors de l\'assignation des salles');
+        }
+    });
+
     const handleEditUser = () => {
         if (selectedUser) {
             updateUserMutation.mutate({
@@ -125,6 +181,41 @@ const BackOffice = () => {
     const openEditModal = (user: User) => {
         setSelectedUser({ ...user });
         setIsEditModalOpen(true);
+    };
+
+    const openRoomModal = async (userId: string) => {
+        setCurrentUserId(userId);
+        setIsRoomModalOpen(true);
+        
+        try {
+            const response = await fetch(`http://${config.dns}:${config.port}/user/${userId}/rooms`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setSelectedRooms(data.roomIds || []);
+            }
+        } catch (error) {
+            console.error('Erreur lors de la récupération des salles de l\'utilisateur:', error);
+            setSelectedRooms([]);
+        }
+    };
+
+    const handleRoomToggle = (roomId: string) => {
+        setSelectedRooms(prev => 
+            prev.includes(roomId) 
+                ? prev.filter(id => id !== roomId)
+                : [...prev, roomId]
+        );
+    };
+
+    const handleAssignRooms = () => {
+        assignRoomsMutation.mutate({
+            userId: currentUserId,
+            roomIds: selectedRooms
+        });
     };
 
     return (
@@ -179,22 +270,29 @@ const BackOffice = () => {
                                             </span>
                                         </td>
                                         <td>
-                                                                                    <div className="action-buttons">
-                                            <button 
-                                                className="edit-btn"
-                                                onClick={() => openEditModal(user)}
-                                                disabled={updateUserMutation.isPending}
-                                            >
-                                                {updateUserMutation.isPending ? 'Modification...' : 'Modifier'}
-                                            </button>
-                                            <button 
-                                                className="delete-btn"
-                                                onClick={() => handleDeleteUser(user._id)}
-                                                disabled={deleteUserMutation.isPending}
-                                            >
-                                                {deleteUserMutation.isPending ? 'Suppression...' : 'Supprimer'}
-                                            </button>
-                                        </div>
+                                            <div className="action-buttons">
+                                                <button 
+                                                    className="edit-btn"
+                                                    onClick={() => openEditModal(user)}
+                                                    disabled={updateUserMutation.isPending}
+                                                >
+                                                    {updateUserMutation.isPending ? 'Modification...' : 'Modifier'}
+                                                </button>
+                                                <button 
+                                                    className="assign-btn"
+                                                    onClick={() => openRoomModal(user._id)}
+                                                    disabled={assignRoomsMutation.isPending}
+                                                >
+                                                    {assignRoomsMutation.isPending ? 'Assignation...' : 'Assigner salles'}
+                                                </button>
+                                                <button 
+                                                    className="delete-btn"
+                                                    onClick={() => handleDeleteUser(user._id)}
+                                                    disabled={deleteUserMutation.isPending}
+                                                >
+                                                    {deleteUserMutation.isPending ? 'Suppression...' : 'Supprimer'}
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -256,7 +354,7 @@ const BackOffice = () => {
                                 value={newUser.role}
                                 onChange={(e) => setNewUser({...newUser, role: e.target.value})}
                             >
-                                <option value="client">Utilisateur</option>
+                                <option value="client">Client</option>
                                 <option value="admin">Administrateur</option>
                             </select>
                         </div>
@@ -318,6 +416,50 @@ const BackOffice = () => {
                             <button 
                                 onClick={() => setIsEditModalOpen(false)}
                                 disabled={updateUserMutation.isPending}
+                            >
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isRoomModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <h2>Assigner des salles à l'utilisateur</h2>
+                        <div className="rooms-selection">
+                            <h3>Sélectionnez les salles :</h3>
+                            <div className="rooms-grid">
+                                {rooms.map(room => (
+                                    <div key={room._id} className="room-checkbox">
+                                        <input
+                                            type="checkbox"
+                                            id={`room-${room._id}`}
+                                            checked={selectedRooms.includes(room._id)}
+                                            onChange={() => handleRoomToggle(room._id)}
+                                        />
+                                        <label htmlFor={`room-${room._id}`}>
+                                            {room.name}
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="modal-actions">
+                            <button 
+                                onClick={handleAssignRooms}
+                                disabled={assignRoomsMutation.isPending}
+                            >
+                                {assignRoomsMutation.isPending ? 'Assignation...' : 'Assigner'}
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    setIsRoomModalOpen(false);
+                                    setSelectedRooms([]);
+                                    setCurrentUserId('');
+                                }}
+                                disabled={assignRoomsMutation.isPending}
                             >
                                 Annuler
                             </button>
