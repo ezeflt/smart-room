@@ -316,15 +316,38 @@ const logout = async (req, res) => {
     });
 }
 
+const getMe = async (req, res) => {
+    try {
+        // req.user est défini par le middleware authenticateToken
+        const userId = req.user.userId;
+        
+        // Récupérer l'utilisateur complet depuis la base de données
+        const user = await User.findById(userId).select('-password'); // Exclure le mot de passe
+        
+        if (!user) {
+            return res.status(404).json({
+                message: "Utilisateur non trouvé",
+                type: "danger"
+            });
+        }
 
-
-module.exports = { 
-    register, 
-    login, 
-    getUser, 
-    updateUser, 
-    deleteUser, 
-    forgotPassword, 
-    resetPassword, 
-    logout
+        res.status(200).json({
+            message: "Informations utilisateur récupérées avec succès",
+            type: "success",
+            user: {
+                id: user._id,
+                username: user.username,
+                mail: user.mail,
+                role: user.role
+            }
+        });
+    } catch (err) {
+        console.error("Erreur lors de la récupération des informations utilisateur :", err);
+        res.status(500).json({
+            message: "Erreur lors de la récupération des informations utilisateur",
+            type: "danger"
+        });
+    }
 };
+
+module.exports = { register, login, getUser, updateUser, deleteUser, forgotPassword, resetPassword, logout, getMe };

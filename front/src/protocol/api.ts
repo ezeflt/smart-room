@@ -59,25 +59,8 @@ export const createUser = async (userData: { username: string; mail: string; pas
 };
 
 // Vérifier si l'utilisateur connecté est admin
-// Note: Cette fonction nécessite un endpoint backend /user/me qui n'existe pas encore
-// En attendant, on simule la vérification avec le token stocké
 export const checkAdminStatus = async () => {
-    try {
-        // Essayer d'appeler l'endpoint backend s'il existe
-        const res = await api.get('/user/me');
-        return res.data;
-    } catch (error) {
-        // Si l'endpoint n'existe pas, on simule une réponse admin pour les tests
-        // TODO: Implémenter l'endpoint /user/me sur le backend
-        console.warn('Endpoint /user/me non disponible, simulation de la vérification admin');
-        
-        // Pour les tests, on considère que l'utilisateur est admin s'il a un token
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            // Simulation: on renvoie un rôle admin temporaire
-            return { role: 'admin' };
-        } else {
-            throw new Error('No token found');
-        }
-    }
+    const res = await api.get('/user/me');
+    // Le backend renvoie { user: { role: "admin" } }, on extrait le rôle
+    return { role: res.data.user.role };
 };
