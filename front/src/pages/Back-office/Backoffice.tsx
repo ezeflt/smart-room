@@ -41,44 +41,32 @@ const BackOffice = () => {
         const verifyAccess = async () => {
             const token = localStorage.getItem('authToken');
             
-            console.log('🔍 Vérification accès admin - Token trouvé:', !!token);
-            
             if (!token) {
-                console.log('❌ Pas de token, redirection vers login');
                 navigate('/login');
                 return;
             }
 
             try {
-                console.log('🔍 Appel API checkAdminStatus...');
                 // Vérifier si le token est valide et si l'utilisateur est admin
                 const userData = await checkAdminStatus();
-                console.log('✅ Réponse API:', userData);
-                console.log('👤 Informations utilisateur - Rôle:', userData.role);
                 
                 if (userData.role !== 'admin') {
-                    console.log('❌ Utilisateur connecté mais pas admin, redirection vers weather');
                     alert('Vous n\'avez pas les droits d\'administrateur pour accéder à cette page.');
                     navigate('/weather');
                     return;
                 }
                 
-                console.log('✅ Utilisateur admin autorisé - Accès à la page admin');
                 // Utilisateur est admin, peut accéder à la page
             } catch (error) {
-                console.error('❌ Erreur lors de la vérification admin:', error);
-                
                 // Si c'est une erreur 401 (non autorisé) ou 403 (forbidden), 
                 // c'est probablement que l'utilisateur n'est pas admin ou que le token est invalide
                 if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-                    console.log('❌ Erreur 401/403 - Utilisateur non autorisé ou token invalide');
                     alert('Vous n\'avez pas les droits d\'administrateur pour accéder à cette page.');
                     navigate('/weather');
                     return;
                 }
                 
                 // Autre erreur (erreur serveur, etc.)
-                console.log('❌ Erreur serveur, redirection vers login');
                 navigate('/login');
                 return;
             }
