@@ -1,5 +1,6 @@
 import React from 'react';
 import './portfolio.css';
+import LogoImage from '../../assets/image/logo.png';
 
 const Portfolio: React.FC = () => {
     return (
@@ -14,7 +15,7 @@ const Portfolio: React.FC = () => {
                     <div className="hero-buttons">
                         <button
                             className="btn-primary"
-                            onClick={() => (window.location.href = '/login')}
+                            onClick={() => (window.location.href = '/weather')}
                         >
                             Commencer
                         </button>
@@ -31,12 +32,7 @@ const Portfolio: React.FC = () => {
                     </div>
                 </div>
                 <div className="hero-visual">
-                    <div className="smart-room-preview">
-                        <div className="room-element sensor"></div>
-                        <div className="room-element alarm"></div>
-                        <div className="room-element weather"></div>
-                        <div className="room-element office"></div>
-                    </div>
+                    <img src={LogoImage} alt="" className="hero-image" />
                 </div>
             </section>
 
@@ -117,7 +113,7 @@ const Portfolio: React.FC = () => {
                     <p>Rejoignez l'avenir de la domotique intelligente</p>
                     <button
                         className="btn-primary"
-                        onClick={() => (window.location.href = '/login')}
+                        onClick={() => (window.location.href = '/weather')}
                     >
                         Commencer maintenant
                     </button>
