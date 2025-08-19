@@ -54,6 +54,7 @@ const BackOffice = () => {
                 // Vérifier si le token est valide et si l'utilisateur est admin
                 const userData = await checkAdminStatus();
                 console.log('✅ Réponse API:', userData);
+                console.log('👤 Informations utilisateur - Rôle:', userData.role);
                 
                 if (userData.role !== 'admin') {
                     console.log('❌ Utilisateur connecté mais pas admin, redirection vers weather');
