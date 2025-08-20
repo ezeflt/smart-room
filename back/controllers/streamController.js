@@ -20,11 +20,15 @@ const weatherStream = (req, res) => {
             const temperature = await getTemperatureBySensor(room_id);
             const humidity = await getHumidityBySensor(room_id);
             const pressure = await getPressureBySensor(room_id);
-            const data = {
-                temperature,
-                humidity,
-                pressure
-            }
+            
+            // Formatage des données pour le frontend
+            const data = [{
+                sensor_id: room_id,
+                temperature: temperature,
+                humidity: humidity,
+                pressure: pressure
+            }];
+            
             res.write(`data: ${JSON.stringify(data)}\n\n`);
         } catch (error) {
             console.error('Erreur lors de l\'envoi des données SSE:', error);
