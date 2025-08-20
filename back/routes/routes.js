@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { register ,getUser,login, deleteUser, updateUser,forgotPassword, resetPassword, logout  } = require("../controllers/userController.js");
+const { register ,getUser,login, deleteUser, updateUser,forgotPassword, resetPassword, logout, getMe  } = require("../controllers/userController.js");
 const { getRooms, getUserRooms, assignUserRooms } = require("../controllers/roomController.js");
 const { mqttController } = require("../controllers/mqttController.js");
 const { setAlarmUser } = require("../controllers/mqttAlarmController.js");
@@ -12,6 +12,7 @@ const { weatherStream, alarmStream, roomStatusStream } = require("../controllers
 router.post("/register", register);
 router.post("/login", login);
 router.get("/user", getUser);
+router.get("/user/me", authenticateToken, getMe);
 router.get("/mqtt", mqttController);
 router.delete('/user/:userId', authenticateToken, deleteUser);
 router.put('/user/:userId', authenticateToken, updateUser);

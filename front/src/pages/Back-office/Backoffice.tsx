@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Back-office.css';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { config } from '../../../config';
-import { updateUser, deleteUser, createUser } from '../../protocol/api';
+import { updateUser, deleteUser, createUser, checkAdminStatus } from '../../protocol/api';
 
 interface User {
     _id: string;
@@ -35,6 +35,45 @@ const BackOffice = () => {
     const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
     const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
     const [currentUserId, setCurrentUserId] = useState<string>('');
+
+    // Vérification du token et du statut admin
+    useEffect(() => {
+        const verifyAccess = async () => {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+
+            try {
+                // Vérifier si le token est valide et si l'utilisateur est admin
+                const userData = await checkAdminStatus();
+                
+                if (userData.role !== 'admin') {
+                    alert('Vous n\'avez pas les droits d\'administrateur pour accéder à cette page.');
+                    navigate('/weather');
+                    return;
+                }
+                
+                // Utilisateur est admin, peut accéder à la page
+            } catch (error) {
+                // Si c'est une erreur 401 (non autorisé) ou 403 (forbidden), 
+                // c'est probablement que l'utilisateur n'est pas admin ou que le token est invalide
+                if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+                    alert('Vous n\'avez pas les droits d\'administrateur pour accéder à cette page.');
+                    navigate('/weather');
+                    return;
+                }
+                
+                // Autre erreur (erreur serveur, etc.)
+                navigate('/login');
+                return;
+            }
+        };
+
+        verifyAccess();
+    }, [navigate]);
 
     const { data: usersData, isLoading, error: queryError } = useQuery({
         queryKey: ['users'],
