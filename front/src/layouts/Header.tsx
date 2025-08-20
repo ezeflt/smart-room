@@ -14,7 +14,7 @@ const Header = () => {
     const handleLogout = () => {
         dispatch(logout());
         dispatch(setToken(null));
-        navigate('/login');
+        navigate('/weather');
     };
 
     return (
