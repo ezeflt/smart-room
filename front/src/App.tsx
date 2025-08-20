@@ -7,20 +7,20 @@ import { useDispatch, useSelector } from 'react-redux';
 import { State, userSelector } from './store/selector';
 import { logout, setRoomsIdAccess, UserState } from './store/user';
 import { getRooms } from './protocol/api';
-import { setRooms } from './store/global';
-import { Room } from './store/global';
+// import { setRooms } from './store/global';
+// import { Room } from './store/global';
 
 function App() {
     const isNotLoginPage = useLocation().pathname !== '/login';
     const user = useSelector<State, UserState>(userSelector);
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        getRooms().then(res => {
-            const orderedRooms = res.rooms.sort((a: Room, b: Room) => a.name.localeCompare(b.name));
-            dispatch(setRooms(orderedRooms));
-        });
-    }, [dispatch]);
+    // useEffect(() => {
+    //     getRooms().then(res => {
+    //         const orderedRooms = res.rooms.sort((a: Room, b: Room) => a.name.localeCompare(b.name));
+    //         dispatch(setRooms(orderedRooms));
+    //     });
+    // }, [dispatch]);
 
     useEffect(() => {
         const eventSource = new EventSource(`http://${config.dns}:${config.port}/room/status/stream`);
