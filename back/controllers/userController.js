@@ -122,6 +122,23 @@ const getUser = async (req, res) => {
     }
 }
 
+const getUserByEmail = async (req, res) => {
+    const { mail } = req.params;
+    const user = await User.findOne({ mail });
+    if (!user) {
+        return res.status(404).json({
+            message: "Utilisateur non trouvé",
+            type: "danger"
+        });
+    }
+    console.log("Utilisateur récupéré :", user);
+    res.status(200).json({
+        message: "Utilisateur récupéré avec succès",
+        type: "success",
+        user
+    });
+}
+
 const updateUser = async (req, res) => {
     const { userId } = req.params;
     const { username, mail, password } = req.body;

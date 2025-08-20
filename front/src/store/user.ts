@@ -9,6 +9,7 @@ export interface UserState {
     token: string | null;
     isAuthenticated: boolean;
     tokenExpiry: number | null;
+    roomsIdAccess: string[];
 }
 
 const AUTH_TOKEN_KEY = 'authToken';
@@ -36,10 +37,11 @@ if (typeof window !== 'undefined') {
 
 const initialState: UserState = {
     alarmStatus: [{ status: 'off', id: '1' }, { status: 'off', id: '2' }, { status: 'off', id: '3' }],
-    email: 'test_email@gmail.com',
-    token: initialToken,
-    isAuthenticated: Boolean(initialToken),
+    email: 'ezechiel@gmail.com',
+    token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGEzODY4NDg3OTE0NmNkMmE1MmM4NjQiLCJtYWlsIjoiZXplY2hpZWxAZ21haWwuY29tIiwiaWF0IjoxNzU1NTQ4MDQzLCJleHAiOjE3NTU2MzQ0NDN9.Q4q6WPvE6-4i5CUxBlCu-AAC4QHaVgT5tKeadaE5EWY',
+    isAuthenticated: true,
     tokenExpiry: initialExpiry,
+    roomsIdAccess: [],
 };
 
 export const userSlice = createSlice({
@@ -63,15 +65,20 @@ export const userSlice = createSlice({
             state.tokenExpiry = action.payload;
             return state;
         },
+        setRoomsIdAccess: (state: UserState, action: PayloadAction<string[]>) => {
+            state.roomsIdAccess = action.payload;
+            return state;
+        },
         logout: (state: UserState) => {
             state.token = null;
             state.isAuthenticated = false;
             state.tokenExpiry = null;
+            state.roomsIdAccess = [];
             return state;
         },
     },
 });
 
-export const { setEmail, setAlarmStatus, setToken, setTokenExpiry, logout } = userSlice.actions;
+export const { setEmail, setAlarmStatus, setToken, setTokenExpiry, setRoomsIdAccess, logout } = userSlice.actions;
 
 export default userSlice.reducer;

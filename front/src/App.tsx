@@ -4,10 +4,11 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Header from './layouts/Header';
 import { config } from '../config';
 import { useDispatch, useSelector } from 'react-redux';
-import { setAlarmStatus } from './store/user';
-import { AlarmStatusTuple } from './store/user';
 import { State, userSelector } from './store/selector';
-import { logout, UserState } from './store/user';
+import { logout, setRoomsIdAccess, UserState } from './store/user';
+import { getRooms } from './protocol/api';
+import { setRooms } from './store/global';
+import { Room } from './store/global';
 
 function App() {
     const isNotLoginPage = useLocation().pathname !== '/login';
@@ -15,9 +16,16 @@ function App() {
     const dispatch = useDispatch();
 
     useEffect(() => {
+        getRooms().then(res => {
+            const orderedRooms = res.rooms.sort((a: Room, b: Room) => a.name.localeCompare(b.name));
+            dispatch(setRooms(orderedRooms));
+        });
+    }, [dispatch]);
+
+    useEffect(() => {
         const eventSource = new EventSource(`http://${config.dns}:${config.port}/room/status/stream`);
         eventSource.onmessage = (event) => {
-            dispatch(setAlarmStatus({ alarmStatus: JSON.parse(event.data) as AlarmStatusTuple }));
+            // dispatch(setAlarmStatus({ alarmStatus: JSON.parse(event.data) as AlarmStatusTuple }));
         };
         return () => {
             eventSource.close();
@@ -40,6 +48,14 @@ function App() {
 
         return () => clearTimeout(timer);
     }, [user.token, user.tokenExpiry, dispatch]);
+
+    useEffect(() => {
+        fetch(`http://${config.dns}:${config.port}/user/${user.email}`, {
+            method: 'GET',
+        }).then(res => res.json()).then(data => {
+            dispatch(setRoomsIdAccess(data.user.rooms as string[]));
+        });
+    }, [user.email, dispatch]);
     
     return (
         <div className="app">

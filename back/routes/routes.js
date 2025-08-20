@@ -1,13 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const { register ,getUser,login, deleteUser, updateUser,forgotPassword, resetPassword, logout, getMe  } = require("../controllers/userController.js");
+const { register ,getUser,login, deleteUser, updateUser,forgotPassword, resetPassword, logout, getUserByEmail  } = require("../controllers/userController.js");
 const { getRooms, getUserRooms, assignUserRooms } = require("../controllers/roomController.js");
 const { mqttController } = require("../controllers/mqttController.js");
 const { setAlarmUser } = require("../controllers/mqttAlarmController.js");
 const { authenticateToken } = require("../middleware/auth.js");
 const { activate, deactivate } = require("../controllers/alarmController.js");
 const { weatherStream, alarmStream, roomStatusStream } = require("../controllers/streamController.js");
-
 
 router.post("/register", register);
 router.post("/login", login);
@@ -19,6 +18,7 @@ router.put('/user/:userId', authenticateToken, updateUser);
 router.post('/alarm/set-user', authenticateToken, setAlarmUser);
 router.post('/alarm/activate',authenticateToken, activate); 
 router.post('/alarm/deactivate',authenticateToken, deactivate); 
+router.get("/user/:mail",authenticateToken, getUserByEmail);
 
 // Stream endpoints
 router.get("/weather/stream", weatherStream);

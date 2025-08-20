@@ -10,26 +10,24 @@ const api = axios.create({
     },
 });
 
-// Attach Authorization header if token exists
-api.interceptors.request.use((config) => {
-    if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            config.headers = config.headers ?? {};
-            (config.headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
-        }
-    }
-    return config;
-});
+export const getRooms = async () => {
+    const res = await api.get('rooms');
+    return res.data;
+};
 
 // PUT
-export const putAlarm = async ({ enabled, room_id }: { enabled: boolean, room_id: number }) => {
+export const putAlarm = async ({ enabled, room_id }: { enabled: boolean, room_id: string }) => {
     const token = localStorage.getItem('token');
     const res = await api.post<AlarmResponse>(`alarm/${enabled ? 'activate' : 'deactivate'}?room_id=${room_id}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
     });
+    return res.data;
+};
+
+export const login = async (mail: string, password: string) => {
+    const res = await api.post('login', { mail, password });
     return res.data;
 };
 
