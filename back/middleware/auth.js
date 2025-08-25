@@ -13,4 +13,21 @@ function authenticateToken(req, res, next) {
     });
 }
 
-module.exports = {authenticateToken}; 
+// Middleware pour authentifier les routes stream avec token en paramètre
+const authenticateStreamToken = (req, res, next) => {
+    const token = req.query.token;
+    if (!token) {
+        return res.status(401).json({ error: 'Token manquant' });
+    }
+    
+    // Vérifier le JWT token
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ error: 'Token invalide' });
+        }
+        req.user = user; // user contient l'email, l'id, etc.
+        next();
+    });
+};
+
+module.exports = {authenticateToken, authenticateStreamToken}; 

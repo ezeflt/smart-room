@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema({
     enum: ["admin", "client"],
     required: true,
   },
+  rooms: {
+    type: Array,
+    required: true,
+  },
 });
 
 const User = mongoose.model("User", userSchema);

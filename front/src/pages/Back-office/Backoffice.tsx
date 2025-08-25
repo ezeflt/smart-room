@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { config } from '../../../config';
 import { updateUser, deleteUser, createUser, checkAdminStatus } from '../../protocol/api';
+import { getAuthToken } from '../../store/user';
 
 interface User {
     _id: string;
@@ -78,7 +79,16 @@ const BackOffice = () => {
     const { data: usersData, isLoading, error: queryError } = useQuery({
         queryKey: ['users'],
         queryFn: async () => {
-            const response = await fetch(`http://${config.dns}:${config.port}/user`);
+            const token = getAuthToken();
+            if (!token) {
+                throw new Error('Token not found');
+            }
+            const response = await fetch(`http://${config.dns}:${config.port}/user`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             if (!response.ok) {
                 throw new Error('Erreur lors de la récupération des utilisateurs');
             }
@@ -89,9 +99,14 @@ const BackOffice = () => {
     const { data: roomsData } = useQuery({
         queryKey: ['rooms'],
         queryFn: async () => {
+            const token = getAuthToken();
+            if (!token) {
+                throw new Error('Token not found');
+            }
             const response = await fetch(`http://${config.dns}:${config.port}/rooms`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             });
             if (!response.ok) {
@@ -176,11 +191,15 @@ const BackOffice = () => {
 
     const assignRoomsMutation = useMutation({
         mutationFn: async ({ userId, roomIds }: { userId: string; roomIds: string[] }) => {
+            const token = getAuthToken();
+            if (!token) {
+                throw new Error('Token not found');
+            }
             const response = await fetch(`http://${config.dns}:${config.port}/user/${userId}/rooms`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ roomIds })
             });
@@ -227,9 +246,13 @@ const BackOffice = () => {
         setIsRoomModalOpen(true);
         
         try {
+            const token = getAuthToken();
+            if (!token) {
+                throw new Error('Token not found');
+            }
             const response = await fetch(`http://${config.dns}:${config.port}/user/${userId}/rooms`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
             if (response.ok) {

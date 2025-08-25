@@ -122,6 +122,23 @@ const getUser = async (req, res) => {
     }
 }
 
+const getUserByEmail = async (req, res) => {
+    const { mail } = req.params;
+    const user = await User.findOne({ mail });
+    if (!user) {
+        return res.status(404).json({
+            message: "Utilisateur non trouvé",
+            type: "danger"
+        });
+    }
+    console.log("Utilisateur récupéré :", user);
+    res.status(200).json({
+        message: "Utilisateur récupéré avec succès",
+        type: "success",
+        user
+    });
+}
+
 const updateUser = async (req, res) => {
     const { userId } = req.params;
     const { username, mail, password } = req.body;
@@ -338,7 +355,8 @@ const getMe = async (req, res) => {
                 id: user._id,
                 username: user.username,
                 mail: user.mail,
-                role: user.role
+                role: user.role,
+                roomIds: user.roomIds
             }
         });
     } catch (err) {
@@ -350,4 +368,4 @@ const getMe = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUser, updateUser, deleteUser, forgotPassword, resetPassword, logout, getMe };
+module.exports = { register, login, getUser, getUserByEmail, updateUser, deleteUser, forgotPassword, resetPassword, logout, getMe };

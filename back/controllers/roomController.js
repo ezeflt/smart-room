@@ -101,8 +101,26 @@ const assignUserRooms = async (req, res) => {
     }
 };
 
+// recupere le status et l'id des 3 rooms
+const getRoomsStatus = async () => {
+    const Room = require("../models/room");
+    const rooms = await Room.find().select('_id name');
+    const roomSensors = await RoomSensor.find().select('room_id');
+    const roomIds = roomSensors.map(rs => rs.room_id);
+    const roomStatus = roomIds.map(roomId => {
+        const room = rooms.find(r => r._id.toString() === roomId.toString());
+        return {
+            id: roomId,
+            name: room.name,
+            status: room.status
+        };
+    });
+    return roomStatus;
+};
+
 module.exports = {
     getRooms,
     getUserRooms,
-    assignUserRooms
+    assignUserRooms,
+    getRoomsStatus
 }; 

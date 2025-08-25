@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import './login.css';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setToken, setTokenExpiry } from '../../store/user';
-import { config } from '../../../config';
+import { setToken, setTokenExpiry, setRoomsIdAccess } from '../../store/user';
+import { login } from '../../protocol/api';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -13,52 +13,35 @@ const Login = () => {
     const [error, setError] = useState<string>('');
 
     const handleLogin = async () => {
-        if (username === '' || password === '') {
-            console.error('Please enter a username and password');
-            setError('Please enter a username and password');
-            return;
-        }
-
-        if (!username.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
-            console.error('Please enter a valid email');
-            setError('Please enter a valid email');
-            return;
-        }
-
         try {
-            // Appel à l'API de login du backend
-            const response = await fetch(`http://${config.dns}:${config.port}/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    mail: username, // Le backend attend 'mail'
-                    password: password
-                })
-            });
+            setError('');
 
-            const data = await response.json();
-
-            if (response.ok) {
-                // Login réussi, récupérer le token JWT
-                const { token, expiresIn } = data;
-                
-                // Stocker le token et calculer l'expiration
-                const expiry = Date.now() + (expiresIn || (2 * 60 * 60 * 1000)); // 2h par défaut
-                
-                dispatch(setToken(token));
-                dispatch(setTokenExpiry(expiry));
-
-                setError('');
-                navigate('/alarm');
-            } else {
-                // Erreur de login
-                setError(data.message || 'Erreur de connexion');
+            if (username === '' || password === '') {
+                setError('Please enter a username and password');
+                return;
             }
+            if (!username.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
+                setError('Please enter a valid email');
+                return;
+            }
+            const res = await login(username, password);
+            if (res.type === 'danger') {
+                setError(res.message);
+                return;
+            }
+            
+            // Calculer l'expiration du token basée sur expiresIn (en millisecondes)
+            const tokenExpiry = Date.now() + res.expiresIn;
+            
+            dispatch(setToken(res.token));
+            dispatch(setTokenExpiry(tokenExpiry));
+            dispatch(setRoomsIdAccess(res.user.roomIds || []));
+            
+            // Naviguer vers la page d'alarme après connexion réussie
+            navigate('/alarm');
+
         } catch (error) {
-            console.error('Erreur lors de la connexion:', error);
-            setError('Erreur de connexion au serveur');
+            setError('Une erreur est survenue lors de la connexion');
         }
     };
 

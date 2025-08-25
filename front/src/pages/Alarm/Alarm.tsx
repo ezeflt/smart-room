@@ -66,21 +66,21 @@ const Alarm = () => {
 
     // HANDLE ALARM
     const handleActivateAlarm = useMutation({
-        mutationFn: async () => {
-            return putAlarm({ room_id: global.selectedRoom, enabled: true });
-        },
-        onSettled: () => dispatch(
-            setAlarmStatus({ 
-                alarmStatus: user.alarmStatus.map((room, index) => ({ ...room, status: index + 1 === global.selectedRoom ? 'on' : 'off' })) as AlarmStatusTuple 
-            })
-        ),
+        // mutationFn: async () => {
+        //     return putAlarm({ room_id: global.selectedRoom, enabled: true });
+        // },
+        // onSettled: () => dispatch(
+        //     setAlarmStatus({ 
+        //         alarmStatus: user.alarmStatus.map((room, index) => ({ ...room, status: index + 1 === global.selectedRoom ? 'on' : 'off' })) as AlarmStatusTuple 
+        //     })
+        // ),
     });
 
     const handleDesactivateAlarm = useMutation({
-        mutationFn: () => putAlarm({ room_id: global.selectedRoom, enabled: false }),
-        onSettled: () => dispatch(
-            setAlarmStatus({ alarmStatus: user.alarmStatus.map((room, index) => ({ ...room, status: index + 1 === global.selectedRoom ? 'on' : 'off' })) as AlarmStatusTuple })
-        ),
+        // mutationFn: () => putAlarm({ room_id: global.selectedRoom, enabled: false }),
+        // onSettled: () => dispatch(
+        //     setAlarmStatus({ alarmStatus: user.alarmStatus.map((room, index) => ({ ...room, status: index + 1 === global.selectedRoom ? 'on' : 'off' })) as AlarmStatusTuple })
+        // ),
     });
 
     return (
