@@ -2,6 +2,7 @@ const SensorStat = require("../models/sensorstat.js");
 const { historic } = require("./alarmController.js");
 const { getTemperatureBySensor, getHumidityBySensor, getPressureBySensor } = require("../controllers/sensorStatController.js");
 const { getRoomsStatus } = require("../controllers/roomController.js");
+const User = require("../models/user.js");
 
 // Endpoint SSE pour les données météo en temps réel
 const weatherStream = (req, res) => {
@@ -48,7 +49,8 @@ const weatherStream = (req, res) => {
 };
 
 // Endpoint SSE pour les données d'alarme en temps réel
-const alarmStream = (req, res) => {
+const alarmStream = async (req, res) => {
+    console.log(req.user);
     res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
@@ -58,12 +60,27 @@ const alarmStream = (req, res) => {
     });
 
     const room_id = req.query.room_id;
+    const user =  await User.findOne({ mail: req.user.mail });
+    
+    if (!room_id) {
+        res.write(`data: ${JSON.stringify({status: "off"})}\n\n`);
+    }
+    console.log(room_id);
+
+    if (!checkRoomAccess(user, room_id)) {
+        res.write(`data: ${JSON.stringify({status: "off"})}\n\n`);
+        return;
+    }
+
+    console.log(user.rooms.includes(room_id));
+
     // Envoi initial des données
     const sendData = async () => {
         try {
             // Mock data instead of database query
-            const data = await historic();
-            res.write(`data: ${JSON.stringify(data)}\n\n`);
+            const allData = await historic(room_id);
+
+            res.write(`data: ${JSON.stringify(allData)}\n\n`);
         } catch (error) {
             console.error('Erreur lors de l\'envoi des données SSE alarme:', error);
         }
@@ -111,6 +128,10 @@ const roomStatusStream = (req, res) => {
         clearInterval(interval);
     });
 };
+
+function checkRoomAccess(user, room_id) {
+    return user.rooms.includes(room_id);
+}
 
 module.exports = {
     weatherStream,

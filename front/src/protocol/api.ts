@@ -33,7 +33,7 @@ export const getRooms = async () => {
 // PUT
 export const putAlarm = async ({ enabled, room_id }: { enabled: boolean, room_id: string }) => {
     const token = localStorage.getItem('token');
-    const res = await api.post<AlarmResponse>(`alarm/${enabled ? 'activate' : 'deactivate'}?room_id=${room_id}`, {
+    const res = await api.put<AlarmResponse>(`alarm/${enabled ? 'activate' : 'deactivate'}?room_id=${room_id}`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }

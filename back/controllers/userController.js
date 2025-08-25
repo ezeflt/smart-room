@@ -73,15 +73,6 @@ const login = async (req, res) => {
         );
         console.log("Token généré :", token);
 
-        // Récupération des salles accessibles à l'utilisateur
-        const userSensors = await UserSensor.find({ user_id: user._id }).select('sensor_id');
-        const sensorIds = userSensors.map(us => us.sensor_id);
-        
-        const roomSensors = await RoomSensor.find({ sensor_id: { $in: sensorIds } }).select('room_id');
-        const roomIds = roomSensors.map(rs => rs.room_id);
-
-        
-        // Envoi du token et des informations utilisateur
         res.status(200).json({
             message: "Connexion réussie!",
             type: "success",
@@ -91,7 +82,7 @@ const login = async (req, res) => {
                 id: user._id,
                 username: user.username,
                 mail: user.mail,
-                roomIds: roomIds
+                roomIds: user.rooms
             }
         });
     } catch (err) {
