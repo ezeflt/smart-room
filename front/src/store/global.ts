@@ -1,11 +1,18 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+export interface Room {
+    _id: string;
+    name: string;
+}
+
 export interface GlobalState {
-    selectedRoom: number;
+    selectedRoom: string | null;
+    rooms: Room[];
 }
 
 const initialState: GlobalState = {
-    selectedRoom: 1,
+    selectedRoom: null,
+    rooms: [],
 };
 
 const globalSlice = createSlice({
@@ -15,8 +22,15 @@ const globalSlice = createSlice({
         setSelectedRoom(state, action) {
             state.selectedRoom = action.payload;
         },
+        setRooms(state, action) {
+            state.rooms = action.payload;
+            // Si c'est la première fois qu'on charge les rooms et qu'aucune n'est sélectionnée, sélectionner la première
+            if (state.rooms.length > 0 && !state.selectedRoom) {
+                state.selectedRoom = state.rooms[0]._id;
+            }
+        },
     },
 });
 
-export const { setSelectedRoom } = globalSlice.actions;
+export const { setSelectedRoom, setRooms } = globalSlice.actions;
 export default globalSlice.reducer;

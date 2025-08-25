@@ -1,12 +1,79 @@
 @import url('https://fonts.googleapis.com/css2?family=Jaro:opsz@6..72&display=swap');
 
-.alarm-history-container {
-    margin: 24px ;
+.container-wrapper{
+    display: flex;
+    flex-direction: column;
     flex: 1;
-    min-height: 0;
+    overflow: hidden; /* Changé de auto à hidden pour éviter le double scroll */
+    gap: 16px;
+    height: 100%; /* Assure que le conteneur prend toute la hauteur disponible */
+}
+
+/* Sélecteur de rooms */
+.room-selector {
+    padding: 16px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    margin: 16px;
+    flex-shrink: 0; /* Empêche la compression */
+}
+
+.room-selector h3 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.room-list {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.room-button {
+    padding: 10px 20px;
+    border: 2px solid #139e24;
+    background-color: white;
+    color: #139e24;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.room-button:hover {
+    background-color: #139e24;
+    color: white;
+}
+
+.room-button.selected {
+    background-color: #139e24;
+    color: white;
+    box-shadow: 0 2px 8px rgba(19, 158, 36, 0.3);
+}
+
+/* Information de la room sélectionnée */
+.selected-room-info {
+    padding: 16px;
+    text-align: center;
+    flex-shrink: 0; /* Empêche la compression */
+}
+
+.selected-room-info h2 {
+    margin: 0;
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.alarm-history-container {
+    margin: 24px;
+    height: 200px; /* Hauteur fixe pour éviter le débordement */
+    max-height: 200px; /* Hauteur maximale */
     background-color: rgba(191, 253, 202, 0.7);
     border: 1px solid #139e24;
-    overflow-y: auto;
+    overflow-y: auto; /* Scroll vertical uniquement dans l'historique */
     color: #000;
     display: flex;
     font-size: 20px;
@@ -14,6 +81,7 @@
     flex-direction: column;
     padding: 16px;
     width: -webkit-fill-available;
+    flex-shrink: 0; /* Empêche la compression */
 }
 
 .alarm-history-container.on {
@@ -26,14 +94,9 @@
     border: 1px solid #e4414d;
 }
 
-.container-wrapper{
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: auto;
-    gap: 16px;
-}
-
 .alarm-history-empty {
-
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
 }

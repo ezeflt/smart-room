@@ -3,7 +3,7 @@ const Alarm = require("../models/alarm.js");
 const activate = async (req, res) => {
   try {
     
-    const { room_id } = req.body;
+    const { room_id } = req.query;
     const user_id = req.user.userId;
 
     if (!user_id || !room_id) {
@@ -35,8 +35,11 @@ const activate = async (req, res) => {
 
 const deactivate = async (req, res) => {
   try {
-    const { room_id } = req.body;
+    const { room_id } = req.query;
     const user_id = req.user.userId;
+
+    console.log('req.user.userId', req.user.userId);
+    console.log('room_id', room_id);
 
     if (!user_id || !room_id) {
       return res
@@ -60,9 +63,9 @@ const deactivate = async (req, res) => {
   }
 };
 
-const historic = async () => {
+const historic = async (room_id) => {
   try {
-    const historique = await Alarm.find()
+    const historique = await Alarm.find({ room_id })
       .populate("user_id", "username mail")
       .populate("room_id", "name")      
       .sort({ timestamp: -1 });

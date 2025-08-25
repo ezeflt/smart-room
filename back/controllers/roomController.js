@@ -103,24 +103,46 @@ const assignUserRooms = async (req, res) => {
 
 // recupere le status et l'id des 3 rooms
 const getRoomsStatus = async () => {
-    const Room = require("../models/room");
-    const rooms = await Room.find().select('_id name');
-    const roomSensors = await RoomSensor.find().select('room_id');
-    const roomIds = roomSensors.map(rs => rs.room_id);
-    const roomStatus = roomIds.map(roomId => {
-        const room = rooms.find(r => r._id.toString() === roomId.toString());
-        return {
-            id: roomId,
-            name: room.name,
-            status: room.status
-        };
-    });
-    return roomStatus;
+    try {
+        const Room = require("../models/room");
+        const Alarm = require("../models/alarm");
+        
+        // Récupérer toutes les salles
+        const rooms = await Room.find().select('_id name');
+        
+        // Pour chaque salle, récupérer le dernier état d'alarme
+        const roomStatus = await Promise.all(rooms.map(async (room) => {
+            // Récupérer la dernière action d'alarme pour cette salle
+            const lastAlarm = await Alarm.findOne({ room_id: room._id })
+                .populate("user_id", "username mail")
+                .sort({ timestamp: -1 })
+                .limit(1);
+            
+            // Déterminer le statut actuel basé sur la dernière action
+            let status = 'off'; // Par défaut, l'alarme est désactivée
+
+            
+            if (lastAlarm) {
+                status = lastAlarm.action === 'active' ? 'on' : 'off';
+            }
+            
+            return {
+                id: room._id,
+                name: room.name,
+                status: status,
+            };
+        }));
+        
+        return roomStatus;
+    } catch (error) {
+        console.error("Erreur lors de la récupération du statut des salles :", error);
+        throw error;
+    }
 };
 
 module.exports = {
     getRooms,
     getUserRooms,
     assignUserRooms,
-    getRoomsStatus
+    getRoomsStatus,
 }; 
