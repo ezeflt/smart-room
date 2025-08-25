@@ -1,6 +1,7 @@
 const SensorStat = require("../models/sensorstat.js");
 const { historic } = require("./alarmController.js");
 const { getTemperatureBySensor, getHumidityBySensor, getPressureBySensor } = require("../controllers/sensorStatController.js");
+const { getRoomsStatus } = require("../controllers/roomController.js");
 
 // Endpoint SSE pour les données météo en temps réel
 const weatherStream = (req, res) => {
@@ -88,8 +89,8 @@ const roomStatusStream = (req, res) => {
     // Envoi initial des données
     const sendData = async () => {
         try {
-            // Mock data pour le statut des alarmes par salle
-            const data = // TODO: get data from database
+            // Get status of rooms from database
+            const data = await getRoomsStatus();
             res.write(`data: ${JSON.stringify(data)}\n\n`);
         } catch (error) {
             console.error('Erreur lors de l\'envoi des données SSE statut alarme:', error);

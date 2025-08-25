@@ -355,7 +355,8 @@ const getMe = async (req, res) => {
                 id: user._id,
                 username: user.username,
                 mail: user.mail,
-                role: user.role
+                role: user.role,
+                roomIds: user.roomIds
             }
         });
     } catch (err) {
@@ -367,4 +368,4 @@ const getMe = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUser, updateUser, deleteUser, forgotPassword, resetPassword, logout, getMe };
+module.exports = { register, login, getUser, getUserByEmail, updateUser, deleteUser, forgotPassword, resetPassword, logout, getMe };

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { AlarmResponse } from './api.interface';
 import { config } from '../../config';
+import { getAuthToken } from '../store/user';
 
 const api = axios.create({
     baseURL: `http://${config.dns}:${config.port}`,
@@ -9,6 +10,20 @@ const api = axios.create({
         'Content-Type': 'application/json',
     },
 });
+
+// Add request interceptor to automatically add Bearer token
+api.interceptors.request.use(
+    (config) => {
+        const token = getAuthToken();
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 export const getRooms = async () => {
     const res = await api.get('rooms');

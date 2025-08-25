@@ -29,12 +29,15 @@ const Login = () => {
                 setError(res.message);
                 return;
             }
-            console.log(res);
+            
+            // Calculer l'expiration du token basée sur expiresIn (en millisecondes)
+            const tokenExpiry = Date.now() + res.expiresIn;
             
             dispatch(setToken(res.token));
-            dispatch(setTokenExpiry(res.expiry));
-            dispatch(setRoomsIdAccess(res.user.roomIds));
-            localStorage.setItem('roomsIdAccess', JSON.stringify(res.user.roomIds));
+            dispatch(setTokenExpiry(tokenExpiry));
+            dispatch(setRoomsIdAccess(res.user.roomIds || []));
+            
+            // Naviguer vers la page d'alarme après connexion réussie
             navigate('/alarm');
 
         } catch (error) {
