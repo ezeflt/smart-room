@@ -2,6 +2,8 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
+const UserSensor = require("../models/usersensor");
+const RoomSensor = require("../models/roomsensor");
 
 const register = async (req, res) => {
     const { username, mail, password, confirmPassword } = req.body;
@@ -70,7 +72,7 @@ const login = async (req, res) => {
             { expiresIn: '24h' }
         );
         console.log("Token généré :", token);
-        // Envoi du token et des informations utilisateur
+
         res.status(200).json({
             message: "Connexion réussie!",
             type: "success",
@@ -79,7 +81,8 @@ const login = async (req, res) => {
             user: {
                 id: user._id,
                 username: user.username,
-                mail: user.mail
+                mail: user.mail,
+                roomIds: user.rooms
             }
         });
     } catch (err) {
@@ -110,6 +113,23 @@ const getUser = async (req, res) => {
     }
 }
 
+const getUserByEmail = async (req, res) => {
+    const { mail } = req.params;
+    const user = await User.findOne({ mail });
+    if (!user) {
+        return res.status(404).json({
+            message: "Utilisateur non trouvé",
+            type: "danger"
+        });
+    }
+    console.log("Utilisateur récupéré :", user);
+    res.status(200).json({
+        message: "Utilisateur récupéré avec succès",
+        type: "success",
+        user
+    });
+}
+
 const updateUser = async (req, res) => {
     const { userId } = req.params;
     const { username, mail, password } = req.body;
@@ -132,6 +152,12 @@ const updateUser = async (req, res) => {
             { new: true, runValidators: true }
         );
 
+        const userSensors = await UserSensor.find({ user_id: user._id }).select('sensor_id');
+        const sensorIds = userSensors.map(us => us.sensor_id);
+        
+        const roomSensors = await RoomSensor.find({ sensor_id: { $in: sensorIds } }).select('room_id');
+        const roomIds = roomSensors.map(rs => rs.room_id);
+
         if (!updatedUser) {
             return res.status(404).json({
                 message: "Utilisateur non trouvé",
@@ -145,7 +171,8 @@ const updateUser = async (req, res) => {
             user: {
                 id: updatedUser._id,
                 username: updatedUser.username,
-                mail: updatedUser.mail
+                mail: updatedUser.mail,
+                roomIds: roomIds
             }
         });
     } catch (err) {
@@ -189,86 +216,24 @@ const deleteUser = async (req, res) => {
 };
 
 
+// Fonction logout : côté JWT, il suffit de supprimer le token côté client
+const logout = async (req, res) => {
+    // Ici, on ne peut pas invalider un JWT côté serveur sans blacklist globale
+    // On informe juste le client de supprimer son token
+    res.status(200).json({
+        message: "Déconnexion réussie !",
+        type: "success"
+    });
+}
 
-
-const forgotPassword = async (req, res) => {
-    const { mail } = req.body;
-
+const getMe = async (req, res) => {
     try {
-        const user = await User.findOne({ mail });
-
-        if (!user) {
-            return res.status(404).json({
-                message: "Aucun utilisateur avec cet email",
-                type: "danger"
-            });
-        }
-
-        const token = jwt.sign(
-            { userId: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: "15m" }
-        );
-
-        const resetLink = `http://localhost:3000/reset-password?token=${token}`;
-
-  
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.GMAIL_USER,
-                pass: process.env.GMAIL_APP_PASS
-            }
-        });
-
+        // req.user est défini par le middleware authenticateToken
+        const userId = req.user.userId;
         
-        const mailOptions = {
-            from: process.env.GMAIL_USER,
-            to: user.mail,
-            subject: "Réinitialisation de mot de passe",
-            html: `
-                <p>Bonjour ${user.username},</p>
-                <p>Vous avez demandé à réinitialiser votre mot de passe.</p>
-                <p>Cliquez ici pour le faire : <a href="${resetLink}">Réinitialiser le mot de passe</a></p>
-                <p>Ce lien expire dans 15 minutes.</p>
-            `
-        };
-
-       
-        await transporter.sendMail(mailOptions);
-
-        res.status(200).json({
-            message: "Lien de réinitialisation envoyé par e-mail",
-            link: resetLink,
-            type: "success"
-        });
-
-    } catch (err) {
-        console.error("Erreur lors de l'envoi du mail :", err);
-        res.status(500).json({
-            message: "Erreur interne lors de la réinitialisation",
-            type: "danger"
-        });
-    }
-};
-
-
-
-
-const resetPassword = async (req, res) => {
-    const { token, newPassword, confirmPassword } = req.body;
-
-    try {
-        if (newPassword !== confirmPassword) {
-            return res.status(400).json({
-                message: "Les mots de passe ne correspondent pas",
-                type: "danger"
-            });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        const user = await User.findById(decoded.userId);
+        // Récupérer l'utilisateur complet depuis la base de données
+        const user = await User.findById(userId).select('-password'); // Exclure le mot de passe
+        
         if (!user) {
             return res.status(404).json({
                 message: "Utilisateur non trouvé",
@@ -276,25 +241,24 @@ const resetPassword = async (req, res) => {
             });
         }
 
-        
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-        user.password = hashedPassword;
-        await user.save();
-
         res.status(200).json({
-            message: "Mot de passe réinitialisé avec succès",
-            type: "success"
+            message: "Informations utilisateur récupérées avec succès",
+            type: "success",
+            user: {
+                id: user._id,
+                username: user.username,
+                mail: user.mail,
+                role: user.role,
+                roomIds: user.roomIds
+            }
         });
-
     } catch (err) {
-        console.error("Erreur lors de la réinitialisation :", err);
-        res.status(400).json({
-            message: "Lien invalide ou expiré",
+        console.error("Erreur lors de la récupération des informations utilisateur :", err);
+        res.status(500).json({
+            message: "Erreur lors de la récupération des informations utilisateur",
             type: "danger"
         });
     }
 };
 
-module.exports = { register, login, getUser, updateUser, deleteUser ,forgotPassword, resetPassword };
+module.exports = { register, login, getUser, getUserByEmail, updateUser, deleteUser, forgotPassword, resetPassword, logout, getMe };

@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { AlarmHistoryResponse, AlarmResponse, WeatherHistoryResponse } from './api.interface';
-import { UserState } from '../store/user';
+import { AlarmResponse } from './api.interface';
 import { config } from '../../config';
+import { getAuthToken } from '../store/user';
 
 const api = axios.create({
     baseURL: `http://${config.dns}:${config.port}`,
@@ -11,23 +11,69 @@ const api = axios.create({
     },
 });
 
-export const getListIdQuery = (sensorList: UserState['listId']): string => {
-    return `id1=${sensorList.id1}&id2=${sensorList.id2}&id3=${sensorList.id3}`;
-}
+// Add request interceptor to automatically add Bearer token
+api.interceptors.request.use(
+    (config) => {
+        const token = getAuthToken();
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
-// GET
-export const getAlarmHistory = async (sensorList: UserState['listId']) => {
-    const res = await api.get<AlarmHistoryResponse[]>(`alarm/history?${getListIdQuery(sensorList)}`);
-    return res.data;
-};
-
-export const getWeatherHistory = async (sensorList: UserState['listId']) => {
-    const res = await api.get<WeatherHistoryResponse>(`weather?${getListIdQuery(sensorList)}`);
+export const getRooms = async () => {
+    const res = await api.get('rooms');
     return res.data;
 };
 
 // PUT
-export const putAlarm = async ({ sensorList, enabled }: { sensorList: UserState['listId']; enabled: boolean }) => {
-    const res = await api.post<AlarmResponse>(`alarm?${getListIdQuery(sensorList)}`, { enabled });
+export const putAlarm = async ({ enabled, room_id }: { enabled: boolean, room_id: string }) => {
+    const token = localStorage.getItem('token');
+    const res = await api.put<AlarmResponse>(`alarm/${enabled ? 'activate' : 'deactivate'}?room_id=${room_id}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
     return res.data;
+};
+
+export const login = async (mail: string, password: string) => {
+    const res = await api.post('login', { mail, password });
+    return res.data;
+};
+
+export const updateUser = async (userId: string, userData: { username?: string; mail?: string; password?: string }) => {
+    const token = localStorage.getItem('token');
+    const res = await api.put(`user/${userId}`, userData, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return res.data;
+};
+
+export const deleteUser = async (userId: string) => {
+    const token = localStorage.getItem('token');
+    const res = await api.delete(`user/${userId}`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+    return res.data;
+};
+
+export const createUser = async (userData: { username: string; mail: string; password: string; role: string }) => {
+    const res = await api.post('register', userData);
+    return res.data;
+};
+
+// Vérifier si l'utilisateur connecté est admin
+export const checkAdminStatus = async () => {
+    const res = await api.get('/user/me');
+    // Le backend renvoie { user: { role: "admin" } }, on extrait le rôle
+    return { role: res.data.user.role };
 };

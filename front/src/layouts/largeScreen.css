@@ -5,8 +5,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 1;
+    height: 45vh; /* Augmenté de 40vh à 45vh pour plus de visibilité */
+    min-height: 350px; /* Hauteur minimale augmentée */
     width: 100%;
+    flex-shrink: 0; /* Empêche la compression */
+    margin: 20px 0; /* Ajoute de l'espace autour */
 }
 
 .large-screen-container,
@@ -97,9 +100,29 @@
     padding: 12px 24px;
     font-size: 24px;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.room-btn:hover:not(.disabled) {
+    background-color: #000;
+    color: #fff;
 }
 
 .room-btn.selected {
     background-color: #000;
     color: #fff;
+}
+
+.room-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #ccc;
+    color: #666;
+    border-color: #999;
+}
+
+.room-btn.disabled:hover {
+    background-color: #ccc;
+    color: #666;
+    border-color: #999;
 }

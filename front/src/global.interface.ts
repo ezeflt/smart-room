@@ -10,4 +10,6 @@ export enum Page {
 export interface LargeScreenProps {
     page: Page;
     degreeCelcius?: number;
+    handleClickToScreen?: () => void;
+    handleRoomSelect?: (roomId: string) => void;
 }
