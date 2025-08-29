@@ -261,4 +261,4 @@ const getMe = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUser, getUserByEmail, updateUser, deleteUser, forgotPassword, resetPassword, logout, getMe };
+module.exports = { register, login, getUser, getUserByEmail, updateUser, deleteUser, logout, getMe };

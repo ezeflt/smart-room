@@ -4,7 +4,7 @@ import { config } from '../../config';
 import { getAuthToken } from '../store/user';
 
 const api = axios.create({
-    baseURL: `http://${config.dns}:${config.port}`,
+    baseURL: `https://${config.dns}`,
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
