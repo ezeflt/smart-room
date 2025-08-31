@@ -3,7 +3,7 @@ import './login.css';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setToken, setTokenExpiry, setRoomsIdAccess } from '../../store/user';
-import { login } from '../../protocol/api';
+import { login, setApiToken } from '../../protocol/api';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -36,6 +36,8 @@ const Login = () => {
             dispatch(setToken(res.token));
             dispatch(setTokenExpiry(tokenExpiry));
             dispatch(setRoomsIdAccess(res.user.roomIds || []));
+
+            setApiToken(res.token);
             
             // Naviguer vers la page d'alarme après connexion réussie
             navigate('/alarm');

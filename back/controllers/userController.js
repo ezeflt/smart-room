@@ -5,6 +5,46 @@ const nodemailer = require('nodemailer');
 const UserSensor = require("../models/usersensor");
 const RoomSensor = require("../models/roomsensor");
 
+// Fonction utilitaire pour récupérer les roomIds d'un utilisateur via les tables de liaison
+const getUserRoomIds = async (userId) => {
+    try {
+        // Récupérer les sensors de l'utilisateur
+        const userSensors = await UserSensor.find({ user_id: userId }).select('sensor_id');
+        const sensorIds = userSensors.map(us => us.sensor_id);
+
+        console.log("@@ @@sensorIds", sensorIds);
+        
+        // Récupérer les rooms associées à ces sensors
+        const roomSensors = await RoomSensor.find({ sensor_id: { $in: sensorIds } }).select('room_id');
+        const roomIds = roomSensors.map(rs => rs.room_id);
+
+        console.log("@@ @@roomIds", roomIds);
+        
+        return roomIds;
+    } catch (error) {
+        console.error("Erreur lors de la récupération des roomIds:", error);
+        return [];
+    }
+};
+
+// Fonction utilitaire pour récupérer les informations complètes des rooms d'un utilisateur
+const getUserRooms = async (userId) => {
+    try {
+        const Room = require("../models/room");
+        
+        // Récupérer les roomIds
+        const roomIds = await getUserRoomIds(userId);
+        
+        // Récupérer les informations complètes des rooms
+        const rooms = await Room.find({ _id: { $in: roomIds } });
+        
+        return rooms;
+    } catch (error) {
+        console.error("Erreur lors de la récupération des rooms:", error);
+        return [];
+    }
+};
+
 const register = async (req, res) => {
     const { username, mail, password, confirmPassword } = req.body;
 
@@ -65,9 +105,12 @@ const login = async (req, res) => {
             });
         }
 
+        // Récupération des roomIds via les tables de liaison
+        const roomIds = await getUserRoomIds(user._id);
+
         // Création d'un token
         const token = jwt.sign(
-            { userId: user._id, mail: user.mail }, // <-- ajoute l'email ici
+            { userId: user._id, mail: user.mail },
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
@@ -82,7 +125,7 @@ const login = async (req, res) => {
                 id: user._id,
                 username: user.username,
                 mail: user.mail,
-                roomIds: user.rooms
+                roomIds: roomIds
             }
         });
     } catch (err) {
@@ -152,11 +195,8 @@ const updateUser = async (req, res) => {
             { new: true, runValidators: true }
         );
 
-        const userSensors = await UserSensor.find({ user_id: user._id }).select('sensor_id');
-        const sensorIds = userSensors.map(us => us.sensor_id);
-        
-        const roomSensors = await RoomSensor.find({ sensor_id: { $in: sensorIds } }).select('room_id');
-        const roomIds = roomSensors.map(rs => rs.room_id);
+        // Récupération des roomIds via les tables de liaison
+        const roomIds = await getUserRoomIds(updatedUser._id);
 
         if (!updatedUser) {
             return res.status(404).json({
@@ -241,6 +281,9 @@ const getMe = async (req, res) => {
             });
         }
 
+        // Récupération des roomIds via les tables de liaison
+        const roomIds = await getUserRoomIds(user._id);
+
         res.status(200).json({
             message: "Informations utilisateur récupérées avec succès",
             type: "success",
@@ -249,7 +292,7 @@ const getMe = async (req, res) => {
                 username: user.username,
                 mail: user.mail,
                 role: user.role,
-                roomIds: user.roomIds
+                roomIds: roomIds
             }
         });
     } catch (err) {
@@ -261,4 +304,26 @@ const getMe = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUser, getUserByEmail, updateUser, deleteUser, logout, getMe };
+// Récupérer les informations complètes des rooms d'un utilisateur
+const getUserRoomsInfo = async (req, res) => {
+    try {
+        const userId = req.params.userId || req.user.userId;
+        
+        // Récupérer les informations complètes des rooms
+        const rooms = await getUserRooms(userId);
+        
+        res.status(200).json({
+            message: "Rooms de l'utilisateur récupérées avec succès",
+            type: "success",
+            rooms: rooms
+        });
+    } catch (err) {
+        console.error("Erreur lors de la récupération des rooms de l'utilisateur :", err);
+        res.status(500).json({
+            message: "Erreur lors de la récupération des rooms de l'utilisateur",
+            type: "danger"
+        });
+    }
+};
+
+module.exports = { register, login, getUser, getUserByEmail, updateUser, deleteUser, logout, getMe, getUserRoomsInfo };
