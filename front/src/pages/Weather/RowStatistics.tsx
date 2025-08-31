@@ -2,11 +2,27 @@ import React from 'react';
 import StatusCircle from '../../atoms/StatusCircle';
 import './rowStatistics.css';
 
-const RowStatistics: React.FC = () => {
-  // Static data
-  const left = [
-    { variant: 'success', text: 'Humidité : 10%' },
-    { variant: 'warning', text: 'Pression : 35%' }
+interface RowStatisticsProps {
+  lastHumidity?: number | null;
+  lastPressure?: number | null;
+}
+
+const RowStatistics: React.FC<RowStatisticsProps> = ({ lastHumidity, lastPressure }) => {
+  const formatPercent = (value?: number | null) =>
+    value === null || value === undefined ? '--' : `${Math.round(value)}%`;
+  const formatPressure = (value?: number | null) =>
+    value === null || value === undefined ? '--' : `${Math.round(value)} hPa`;
+
+  const pressureVariant = (value?: number | null): 'success' | 'warning' | 'danger' => {
+    if (value === null || value === undefined) return 'warning';
+    if (value >= 1005 && value <= 1025) return 'success';
+    if ((value >= 990 && value <= 1004) || (value >= 1026 && value <= 1035)) return 'warning';
+    return 'danger';
+  };
+
+  const left: { variant: 'success' | 'warning' | 'danger'; text: string }[] = [
+    { variant: 'success', text: `Humidité : ${formatPercent(lastHumidity)}` },
+    { variant: pressureVariant(lastPressure), text: `Pression : ${formatPressure(lastPressure)}` }
   ];
   const right = [
     'Réduire de 30% → vert',
@@ -41,14 +57,14 @@ const RowStatistics: React.FC = () => {
       {/* Center section (legends) */}
       <div className="row-center">
         <div className="row-center-row">
-          <StatusCircle variant="success" text="10/20%" size={circleSize} textSize={textSize} />
-          <StatusCircle variant="warning" text="20/50%" size={circleSize} textSize={textSize} />
-          <StatusCircle variant="danger" text="50/100%" size={circleSize} textSize={textSize} />
+          <StatusCircle variant="success" text="40–60%" size={circleSize} textSize={textSize} />
+          <StatusCircle variant="warning" text="30–39/61–70%" size={circleSize} textSize={textSize} />
+          <StatusCircle variant="danger" text="<30%/>70%" size={circleSize} textSize={textSize} />
         </div>
         <div className="row-center-row">
-          <StatusCircle variant="success" text="10/20%" size={circleSize} textSize={textSize} />
-          <StatusCircle variant="warning" text="20/50%" size={circleSize} textSize={textSize} />
-          <StatusCircle variant="danger" text="50/100%" size={circleSize} textSize={textSize} />
+          <StatusCircle variant="success" text="1005–1025 hPa" size={circleSize} textSize={textSize} />
+          <StatusCircle variant="warning" text="990–1004/1026–1035 hPa" size={circleSize} textSize={textSize} />
+          <StatusCircle variant="danger" text="<990/>1035 hPa" size={circleSize} textSize={textSize} />
         </div>
       </div>
       {/* Right section */}

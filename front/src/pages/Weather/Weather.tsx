@@ -10,6 +10,8 @@ import { useLocation } from 'react-router-dom';
 import Modal from '../../atoms/Modal';
 import { GlobalState } from '../../store/global';
 import config from '../../../config.json';
+import LargeScreen from '../../layouts/LargeScreen';
+import { Page } from '../../global.interface';
 
 const Weather = () => {
     const user = useSelector<State, UserState>(userSelector);
@@ -36,9 +38,11 @@ const Weather = () => {
     }, [location.state, hasShownAlert]);
 
     useEffect(() => {
+        console.log('Connexion au flux météo avec URI:', uri);
         const eventSource = new EventSource(uri);
         eventSource.onmessage = (event) => {
             const data = JSON.parse(event.data);
+            console.log('Données reçues du flux météo:', data);
             if (data && data.length > 0) {
                 // Traitement des données pour chaque capteur
                 data.forEach((sensorData, index) => {
@@ -76,8 +80,8 @@ const Weather = () => {
   return (
     <div style={{ padding: '2rem' }}>
         <Modal open={modalOpen} onClose={() => setModalOpen(false)} message={modalMessage || ''} />
-        <h1> Météo :</h1>
-      <RowStatistics />
+        <LargeScreen page={Page.Weather} degreeCelcius={lastTemperature ?? 0} />
+      <RowStatistics lastHumidity={lastHumidity} lastPressure={lastPressure} />
     </div>
   );
 }

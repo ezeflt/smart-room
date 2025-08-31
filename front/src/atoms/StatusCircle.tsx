@@ -23,10 +23,14 @@ const StatusCircle: React.FC<StatusCircleProps> = ({ variant, text, size = 32, t
           display: 'inline-block',
           width: size,
           height: size,
+          minWidth: size,
+          minHeight: size,
           borderRadius: '50%',
           background: circleColor,
           border: '1.5px solid #e0e0e0',
           boxShadow: '3px 3px 8px 0px rgba(44, 62, 80, 0.18)',
+          boxSizing: 'content-box',
+          flexShrink: 0,
         }}
       />
       <span style={{ fontSize: textSize }}>{text}</span>
