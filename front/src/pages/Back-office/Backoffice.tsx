@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import './Back-office.css';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { config } from '../../../config';
 import { updateUser, deleteUser, createUser, checkAdminStatus } from '../../protocol/api';
 import { getAuthToken } from '../../store/user';
+import { config } from '../../../config';
 
 interface User {
     _id: string;
@@ -83,7 +83,7 @@ const BackOffice = () => {
             if (!token) {
                 throw new Error('Token not found');
             }
-            const response = await fetch(`http://${config.dns}:${config.port}/user`, {
+            const response = await fetch(`${config.api}/user`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -103,7 +103,7 @@ const BackOffice = () => {
             if (!token) {
                 throw new Error('Token not found');
             }
-            const response = await fetch(`http://${config.dns}:${config.port}/rooms`, {
+            const response = await fetch(`${config.api}/rooms`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -195,7 +195,7 @@ const BackOffice = () => {
             if (!token) {
                 throw new Error('Token not found');
             }
-            const response = await fetch(`http://${config.dns}:${config.port}/user/${userId}/rooms`, {
+            const response = await fetch(`${config.api}/user/${userId}/rooms`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -250,7 +250,7 @@ const BackOffice = () => {
             if (!token) {
                 throw new Error('Token not found');
             }
-            const response = await fetch(`http://${config.dns}:${config.port}/user/${userId}/rooms`, {
+            const response = await fetch(`${config.api}/user/${userId}/rooms`, {  
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
