@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { AlarmResponse } from './api.interface';
-import { config } from '../../config';
 import { getAuthToken } from '../store/user';
+import config from '../../config.json';
 
 const api = axios.create({
-    baseURL: `https://${config.dns}`,
+    baseURL: config.api,
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',

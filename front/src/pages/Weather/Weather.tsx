@@ -9,7 +9,7 @@ import RowStatistics from './RowStatistics';
 import { useLocation } from 'react-router-dom';
 import Modal from '../../atoms/Modal';
 import { GlobalState } from '../../store/global';
-import { config } from '../../../config';
+import config from '../../../config.json';
 
 const Weather = () => {
     const user = useSelector<State, UserState>(userSelector);

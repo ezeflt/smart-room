@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateUser, deleteUser, createUser, checkAdminStatus } from '../../protocol/api';
 import { getAuthToken } from '../../store/user';
-import { config } from '../../../config';
+import config from '../../../config.json';
 
 interface User {
     _id: string;
