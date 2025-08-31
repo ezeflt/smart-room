@@ -8,11 +8,11 @@ import { AlarmStatusTuple, UserState } from '../../store/user';
 import { setAlarmStatus } from '../../store/user';
 import { useEffect, useState, useRef } from 'react';
 import { AlarmProps } from './alarm.interface';
-import { config } from '../../../config';
 import React from 'react';
 import LargeScreen from '../../layouts/LargeScreen';
 import { Page } from '../../global.interface';
 import { useNavigate } from 'react-router-dom';
+import config from '../../../config.json';
 
 const Alarm = () => {
     const dispatch = useDispatch();
@@ -21,19 +21,54 @@ const Alarm = () => {
     const navigate = useNavigate();
     const wasAuthenticated = useRef(user.isAuthenticated);
 
-    // Utiliser la room sélectionnée depuis le store global
     const selectedRoom = global.rooms.find(room => room._id === global.selectedRoom) || global.rooms[0];
-    
-    // Trouver le statut d'alarme de la room sélectionnée
     const selectedRoomAlarmStatus = user.alarmStatus.find(status => status.id === selectedRoom?._id);
 
-    console.log('selectedRoomAlarmStatus', user.alarmStatus);
-    console.log('selectedRoomAlarmStatus.status', selectedRoomAlarmStatus?.status);
+    const [alarmHistory, setAlarmHistory] = useState<AlarmProps[] | null>(null);
 
-    console.log('user.roomsIdAccess', user.roomsIdAccess);
-    console.log('global.rooms', global.rooms);
-    console.log('selectedRoom', selectedRoom);
-    console.log('selectedRoomAlarmStatus', selectedRoomAlarmStatus);
+    // PROTECT ALARM PAGE
+    useEffect(() => {
+        // Vérification de l'authentification via l'état Redux
+        if (!user.isAuthenticated || !user.token || !user.tokenExpiry) {
+            // Si l'utilisateur était authentifié avant et ne l'est plus, c'est une déconnexion
+            if (wasAuthenticated.current) {
+                navigate('/weather');
+            } else {
+                // Sinon, c'est un accès non autorisé
+                navigate('/login');
+            }
+            return;
+        }
+
+        // Vérification de l'expiration du token
+        if (Date.now() >= user.tokenExpiry) {
+            navigate('/login');
+            return;
+        }
+
+        // Mise à jour de l'état précédent
+        wasAuthenticated.current = user.isAuthenticated;
+    }, [user.isAuthenticated, user.token, user.tokenExpiry, navigate]);
+
+    // GET ALARM HISTORY (STREAM)
+    useEffect(() => {
+        if (selectedRoom && user.token) {
+            // Utiliser l'ID de la room sélectionnée pour la requête
+            const query = selectedRoom ? `room_id=${selectedRoom._id}&token=${user.token}` : '';
+            const URI = selectedRoom ? `${config.api}/alarm/stream?${query}` : '';
+
+            const eventSource = new EventSource(URI);
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log('data', data);
+                setAlarmHistory(data);
+            };
+
+            return () => {
+                eventSource.close();
+            };
+        }
+    }, [selectedRoom, user.token]);
 
     // Déplacer useMutation au niveau du composant
     const activateAlarmMutation = useMutation({
@@ -75,58 +110,6 @@ const Alarm = () => {
             console.error('Erreur lors de la désactivation de l\'alarme:', error);
         }
     });
-
-    useEffect(() => {
-        // Vérification de l'authentification via l'état Redux
-        if (!user.isAuthenticated || !user.token || !user.tokenExpiry) {
-            // Si l'utilisateur était authentifié avant et ne l'est plus, c'est une déconnexion
-            if (wasAuthenticated.current) {
-                navigate('/weather');
-            } else {
-                // Sinon, c'est un accès non autorisé
-                navigate('/login');
-            }
-            return;
-        }
-
-        // Vérification de l'expiration du token
-        if (Date.now() >= user.tokenExpiry) {
-            navigate('/login');
-            return;
-        }
-
-        // Mise à jour de l'état précédent
-        wasAuthenticated.current = user.isAuthenticated;
-    }, [user.isAuthenticated, user.token, user.tokenExpiry, navigate]);
-
-    // Retirer toute la logique d'erreur et de redirection liée au token
-
-    const [alarmHistory, setAlarmHistory] = useState<AlarmProps[] | null>(null);
-    
-    // Debug pour le problème de débordement
-    console.log('Room ID sélectionnée:', selectedRoom?._id);
-    console.log('Nombre d\'alarmes dans l\'historique:', alarmHistory?.length || 0);
-    console.log('Données d\'alarme:', alarmHistory);
-
-    // Utiliser l'ID de la room sélectionnée pour la requête
-    const query = selectedRoom ? `room_id=${selectedRoom._id}&token=${user.token}` : '';
-    const URI = selectedRoom ? `http://${config.dns}:${config.port}/alarm/stream?${query}` : '';
-
-    // GET ALARM HISTORY (STREAM)
-    useEffect(() => {
-        if (selectedRoom && URI) {
-            const eventSource = new EventSource(URI);
-            eventSource.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                console.log('data', data);
-                setAlarmHistory(data);
-            };
-
-            return () => {
-                eventSource.close();
-            };
-        }
-    }, [selectedRoom, URI]);
 
     // Fonction pour sélectionner une room
     const handleRoomSelect = (roomId: string) => {
