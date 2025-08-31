@@ -25,7 +25,7 @@ function App() {
 
     useEffect(() => {
         if (!user.token) return;
-        const eventSource = new EventSource(`http://${config.dns}:${config.port}/room/status/stream?token=${user.token}`);
+        const eventSource = new EventSource(`${config.api}/room/status/stream?token=${user.token}`);
         eventSource.onmessage = (event) => {
             console.log('event.data', JSON.parse(event.data));
             dispatch(setAlarmStatus({ alarmStatus: JSON.parse(event.data) as AlarmStatusTuple }));
@@ -55,7 +55,7 @@ function App() {
     useEffect(() => {
         if (!user.email) return;
         console.log(user.email);
-        fetch(`http://${config.dns}:${config.port}/user/${user.email}`, {
+        fetch(`${config.api}/user/${user.email}`, {
             method: 'GET',
         }).then(res => res.json()).then(data => {
             console.log(data);
