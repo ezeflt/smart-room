@@ -25,6 +25,10 @@ api.interceptors.request.use(
     }
 );
 
+export const setApiToken = async (token: string) => {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+};
+
 export const getRooms = async () => {
     const res = await api.get('rooms');
     return res.data;
@@ -76,4 +80,9 @@ export const checkAdminStatus = async () => {
     const res = await api.get('/user/me');
     // Le backend renvoie { user: { role: "admin" } }, on extrait le rôle
     return { role: res.data.user.role };
+};
+
+export const getMe = async () => {
+    const res = await api.get('/user/me');
+    return res.data;
 };

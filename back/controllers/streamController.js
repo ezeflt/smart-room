@@ -3,6 +3,28 @@ const { historic } = require("./alarmController.js");
 const { getTemperatureBySensor, getHumidityBySensor, getPressureBySensor } = require("../controllers/sensorStatController.js");
 const { getRoomsStatus } = require("../controllers/roomController.js");
 const User = require("../models/user.js");
+const UserSensor = require("../models/usersensor.js");
+const RoomSensor = require("../models/roomsensor.js");
+
+// Fonction utilitaire pour vérifier l'accès d'un utilisateur à une room via les tables de liaison
+const checkRoomAccess = async (user, room_id) => {
+    try {
+        // Récupérer les sensors de l'utilisateur
+        const userSensors = await UserSensor.find({ user_id: user._id }).select('sensor_id');
+        const sensorIds = userSensors.map(us => us.sensor_id);
+        
+        // Vérifier si un de ces sensors est associé à la room demandée
+        const roomSensor = await RoomSensor.findOne({ 
+            sensor_id: { $in: sensorIds }, 
+            room_id: room_id 
+        });
+        
+        return !!roomSensor; // Retourne true si un sensor est trouvé, false sinon
+    } catch (error) {
+        console.error("Erreur lors de la vérification de l'accès à la room:", error);
+        return false;
+    }
+};
 
 // Endpoint SSE pour les données météo en temps réel
 const weatherStream = (req, res) => {
@@ -19,13 +41,24 @@ const weatherStream = (req, res) => {
     // Envoi initial des données
     const sendData = async () => {
         try {
-            const temperature = await getTemperatureBySensor(room_id);
-            const humidity = await getHumidityBySensor(room_id);
-            const pressure = await getPressureBySensor(room_id);
+            // Récupérer le sensor_id lié à la room
+            const link = await RoomSensor.findOne({ room_id });
+
+            if (!link) {
+                // Aucune correspondance room -> sensor, renvoyer tableau vide
+                res.write(`data: ${JSON.stringify([])}\n\n`);
+                return;
+            }
+
+            const sensorId = link.sensor_id;
+
+            const temperature = await getTemperatureBySensor(sensorId);
+            const humidity = await getHumidityBySensor(sensorId);
+            const pressure = await getPressureBySensor(sensorId);
             
             // Formatage des données pour le frontend
             const data = [{
-                sensor_id: room_id,
+                sensor_id: sensorId,
                 temperature: temperature,
                 humidity: humidity,
                 pressure: pressure
@@ -64,15 +97,18 @@ const alarmStream = async (req, res) => {
     
     if (!room_id) {
         res.write(`data: ${JSON.stringify({status: "off"})}\n\n`);
+        return;
     }
     console.log(room_id);
 
-    if (!checkRoomAccess(user, room_id)) {
+    // Vérifier l'accès à la room via les tables de liaison
+    const hasAccess = await checkRoomAccess(user, room_id);
+    if (!hasAccess) {
         res.write(`data: ${JSON.stringify({status: "off"})}\n\n`);
         return;
     }
 
-    console.log(user.rooms.includes(room_id));
+    console.log("Accès autorisé à la room:", room_id);
 
     // Envoi initial des données
     const sendData = async () => {
@@ -128,10 +164,6 @@ const roomStatusStream = (req, res) => {
         clearInterval(interval);
     });
 };
-
-function checkRoomAccess(user, room_id) {
-    return user.rooms.includes(room_id);
-}
 
 module.exports = {
     weatherStream,

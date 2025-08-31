@@ -1,6 +1,6 @@
 export interface AlarmProps {
     room: number;
-    action: 'on' | 'off';
+    action: 'active' | 'desactive';
     timestamp: Date;
     userName: string;
 }

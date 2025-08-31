@@ -10,6 +10,7 @@ export interface UserState {
     isAuthenticated: boolean;
     tokenExpiry: number | null;
     roomsIdAccess: string[];
+    isInitialized: boolean;
 }
 
 const AUTH_TOKEN_KEY = 'authToken';
@@ -28,7 +29,7 @@ export const setUserToLocalStorage = (token: string | null, tokenExpiry: number 
     }
 };
 
-export const initUser = (): { token: string | null; tokenExpiry: number | null } => {
+export const initUser = (): { token: string | null; tokenExpiry: number | null; isAuthenticated: boolean } => {
     if (typeof window !== 'undefined') {
         const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
         const storedExpiryStr = localStorage.getItem(AUTH_TOKEN_EXPIRY_KEY);
@@ -36,31 +37,34 @@ export const initUser = (): { token: string | null; tokenExpiry: number | null }
         const now = Date.now();
 
         if (storedToken && storedExpiry && now < storedExpiry) {
-            return { token: storedToken, tokenExpiry: storedExpiry };
+            return { token: storedToken, tokenExpiry: storedExpiry, isAuthenticated: true };
         } else {
             // Cleanup if expired or inconsistent
             localStorage.removeItem(AUTH_TOKEN_KEY);
             localStorage.removeItem(AUTH_TOKEN_EXPIRY_KEY);
         }
     }
-    return { token: null, tokenExpiry: null };
+    return { token: null, tokenExpiry: null, isAuthenticated: false };
 };
 
 let initialToken: string | null = null;
 let initialExpiry: number | null = null;
+let initialIsAuthenticated: boolean = false;
 if (typeof window !== 'undefined') {
-    const { token, tokenExpiry } = initUser();
+    const { token, tokenExpiry, isAuthenticated } = initUser();
     initialToken = token;
     initialExpiry = tokenExpiry;
+    initialIsAuthenticated = isAuthenticated;
 }
 
 const initialState: UserState = {
     alarmStatus: [],
     email: '',
     token: initialToken,
-    isAuthenticated: false,
+    isAuthenticated: initialIsAuthenticated,
     tokenExpiry: initialExpiry,
     roomsIdAccess: [],
+    isInitialized: false,
 };
 
 export const userSlice = createSlice({
@@ -98,17 +102,28 @@ export const userSlice = createSlice({
             state.roomsIdAccess = action.payload;
             return state;
         },
+        initAuthFromStorage: (state: UserState) => {
+            const { token, tokenExpiry, isAuthenticated } = initUser();
+            state.token = token;
+            state.tokenExpiry = tokenExpiry;
+            state.isAuthenticated = isAuthenticated;
+            state.isInitialized = true;
+            return state;
+        },
         logout: (state: UserState) => {
             state.token = null;
             state.isAuthenticated = false;
             state.tokenExpiry = null;
             state.roomsIdAccess = [];
+            state.isInitialized = true; // Garder true car on a vérifié l'état
+            // Clean up localStorage
+            setUserToLocalStorage(null, null);
             return state;
         },
     },
 });
 
-export const { setEmail, setAlarmStatus, setToken, setTokenExpiry, setRoomsIdAccess, logout } = userSlice.actions;
+export const { setEmail, setAlarmStatus, setToken, setTokenExpiry, setRoomsIdAccess, initAuthFromStorage, logout } = userSlice.actions;
 
 // Utility function to get auth token for API calls
 export const getAuthToken = (): string | null => {
