@@ -3,6 +3,7 @@ const { historic } = require("./alarmController.js");
 const { getTemperatureBySensor, getHumidityBySensor, getPressureBySensor } = require("../controllers/sensorStatController.js");
 const { getRoomsStatus } = require("../controllers/roomController.js");
 const User = require("../models/user.js");
+const RoomSensor = require("../models/roomsensor.js");
 
 // Endpoint SSE pour les données météo en temps réel
 const weatherStream = (req, res) => {
@@ -19,13 +20,24 @@ const weatherStream = (req, res) => {
     // Envoi initial des données
     const sendData = async () => {
         try {
-            const temperature = await getTemperatureBySensor(room_id);
-            const humidity = await getHumidityBySensor(room_id);
-            const pressure = await getPressureBySensor(room_id);
+            // Récupérer le sensor_id lié à la room
+            const link = await RoomSensor.findOne({ room_id });
+
+            if (!link) {
+                // Aucune correspondance room -> sensor, renvoyer tableau vide
+                res.write(`data: ${JSON.stringify([])}\n\n`);
+                return;
+            }
+
+            const sensorId = link.sensor_id;
+
+            const temperature = await getTemperatureBySensor(sensorId);
+            const humidity = await getHumidityBySensor(sensorId);
+            const pressure = await getPressureBySensor(sensorId);
             
             // Formatage des données pour le frontend
             const data = [{
-                sensor_id: room_id,
+                sensor_id: sensorId,
                 temperature: temperature,
                 humidity: humidity,
                 pressure: pressure

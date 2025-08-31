@@ -13,7 +13,7 @@ export interface GlobalState {
 const initialState: GlobalState = {
     selectedRoom: null,
     rooms: [],
-};
+    };
 
 const globalSlice = createSlice({
     name: 'global',
