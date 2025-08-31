@@ -6,15 +6,31 @@ import { useDispatch, useSelector } from 'react-redux';
 import { State, userSelector } from './store/selector';
 import { AlarmStatusTuple, logout, setRoomsIdAccess, UserState } from './store/user';
 import { setAlarmStatus } from './store/user';
-import { getRooms } from './protocol/api';
 import { setRooms, setSelectedRoom } from './store/global';
+import { getMe, getRooms } from './protocol/api';
 import { Room } from './store/global';
 import config from '../config.json';
+import { initAuthFromStorage } from './store/user';
 
 function App() {
     const isNotLoginPage = useLocation().pathname !== '/login';
     const user = useSelector<State, UserState>(userSelector);
     const dispatch = useDispatch();
+
+    // Initialiser l'authentification depuis le localStorage au démarrage
+    useEffect(() => {
+        dispatch(initAuthFromStorage());
+    }, [dispatch]);
+
+    // Récupérer les rooms de l'utilisateur
+    useEffect(() => {
+        if (!user.token) {
+            return;
+        };
+        getMe().then(res => {
+            dispatch(setRoomsIdAccess(res.user.roomIds as string[]));
+        });
+    }, [dispatch, user.token]);
 
     useEffect(() => {
         getRooms()
@@ -31,7 +47,9 @@ function App() {
     }, [dispatch]);
 
     useEffect(() => {
-        if (!user.token) return;
+        if (!user.token) {
+            return
+        };
         const eventSource = new EventSource(`${config.api}/room/status/stream?token=${user.token}`);
         eventSource.onmessage = (event) => {
             console.log('event.data', JSON.parse(event.data));
@@ -40,7 +58,7 @@ function App() {
         return () => {
             eventSource.close();
         };
-    }, [dispatch]);
+    }, [dispatch, user.token]);
 
     useEffect(() => {
         if (!user.token || !user.tokenExpiry) return;
