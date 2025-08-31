@@ -7,7 +7,7 @@ import { State, userSelector } from './store/selector';
 import { AlarmStatusTuple, logout, setRoomsIdAccess, UserState } from './store/user';
 import { setAlarmStatus } from './store/user';
 import { getRooms } from './protocol/api';
-import { setRooms } from './store/global';
+import { setRooms, setSelectedRoom } from './store/global';
 import { Room } from './store/global';
 import config from '../config.json';
 
@@ -17,10 +17,17 @@ function App() {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        getRooms().then(res => {
-            const orderedRooms = res.rooms.sort((a: Room, b: Room) => a.name.localeCompare(b.name));
-            dispatch(setRooms(orderedRooms));
-        });
+        getRooms()
+            .then(res => {
+                const orderedRooms = (res.rooms || []).sort((a: Room, b: Room) => a.name.localeCompare(b.name));
+                dispatch(setRooms(orderedRooms));
+                if (orderedRooms.length > 0) {
+                    dispatch(setSelectedRoom(orderedRooms[0]._id));
+                }
+            })
+            .catch(() => {
+                dispatch(setRooms([]));
+            });
     }, [dispatch]);
 
     useEffect(() => {

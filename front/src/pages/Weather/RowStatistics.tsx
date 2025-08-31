@@ -10,24 +10,33 @@ interface RowStatisticsProps {
 const RowStatistics: React.FC<RowStatisticsProps> = ({ lastHumidity, lastPressure }) => {
   const formatPercent = (value?: number | null) =>
     value === null || value === undefined ? '--' : `${Math.round(value)}%`;
-  const formatPressure = (value?: number | null) =>
-    value === null || value === undefined ? '--' : `${Math.round(value)} hPa`;
+  const toHpa = (value?: number | null) =>
+    value === null || value === undefined ? null : value / 100;
+  const formatPressure = (value?: number | null) => {
+    const hpa = toHpa(value);
+    return hpa === null ? '--' : `${Math.round(hpa)} hPa`;
+  };
 
   const pressureVariant = (value?: number | null): 'success' | 'warning' | 'danger' => {
+    const hpa = toHpa(value);
+    if (hpa === null) return 'warning';
+    if (hpa >= 1005 && hpa <= 1025) return 'success';
+    if ((hpa >= 990 && hpa <= 1004) || (hpa >= 1026 && hpa <= 1035)) return 'warning';
+    return 'danger';
+  };
+
+  const humidityVariant = (value?: number | null): 'success' | 'warning' | 'danger' => {
     if (value === null || value === undefined) return 'warning';
-    if (value >= 1005 && value <= 1025) return 'success';
-    if ((value >= 990 && value <= 1004) || (value >= 1026 && value <= 1035)) return 'warning';
+    if (value >= 40 && value < 60) return 'success';
+    if ((value >= 30 && value < 40) || (value >= 60 && value <= 70)) return 'warning';
     return 'danger';
   };
 
   const left: { variant: 'success' | 'warning' | 'danger'; text: string }[] = [
-    { variant: 'success', text: `Humidité : ${formatPercent(lastHumidity)}` },
+    { variant: humidityVariant(lastHumidity), text: `Humidité : ${formatPercent(lastHumidity)}` },
     { variant: pressureVariant(lastPressure), text: `Pression : ${formatPressure(lastPressure)}` }
   ];
-  const right = [
-    'Réduire de 30% → vert',
-    'Réduire de 10% → vert'
-  ];
+  // Légende affichée en brut (sans map)
 
   // Responsive
   const useIsMobile = () => {
@@ -67,11 +76,13 @@ const RowStatistics: React.FC<RowStatisticsProps> = ({ lastHumidity, lastPressur
           <StatusCircle variant="danger" text="<990/>1035 hPa" size={circleSize} textSize={textSize} />
         </div>
       </div>
+      {/* Vertical separator */}
+      <div className="row-separator" />
       {/* Right section */}
       <div className="row-right">
-        {right.map((txt, idx) => (
-          <span key={idx} className="row-text">{txt}</span>
-        ))}
+        <StatusCircle variant="success" text=" : Température idéale" size={circleSize} textSize={textSize} />
+        <StatusCircle variant="warning" text=" : Attention, mais acceptable" size={circleSize} textSize={textSize} />
+        <StatusCircle variant="danger" text=" : Très mauvais" size={circleSize} textSize={textSize} />
       </div>
     </div>
   );

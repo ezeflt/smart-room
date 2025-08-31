@@ -22,7 +22,7 @@ router.put('/alarm/deactivate',authenticateToken, deactivate);
 router.get("/user/:mail",authenticateToken, getUserByEmail);
 
 // Stream endpoints
-router.get("/weather/stream", authenticateStreamToken, weatherStream);
+router.get("/weather/stream", weatherStream);
 router.get("/alarm/stream", authenticateStreamToken, alarmStream);
 router.get("/room/status/stream", authenticateStreamToken, roomStatusStream);
 router.post("/logout", logout);
