@@ -52,23 +52,31 @@ const weatherStream = (req, res) => {
 
             const sensorId = link.sensor_id;
 
-            const temperature = await getTemperatureBySensor(sensorId);
-            const humidity = await getHumidityBySensor(sensorId);
-            const pressure = await getPressureBySensor(sensorId);
-            
-            // Récupérer le datetime de la dernière mesure (utiliser celui de la température comme référence)
+            // Récupérer chaque mesure avec son datetime individuel
             const tempData = await SensorStat.findOne(
                 { sensor_id: sensorId, temperature: { $exists: true } }, 
-                { get_time: 1 }
+                { temperature: 1, get_time: 1 }
             ).sort({ get_time: -1 });
             
-            // Formatage des données pour le frontend
+            const humidityData = await SensorStat.findOne(
+                { sensor_id: sensorId, humidity: { $exists: true } }, 
+                { humidity: 1, get_time: 1 }
+            ).sort({ get_time: -1 });
+            
+            const pressureData = await SensorStat.findOne(
+                { sensor_id: sensorId, pressure: { $exists: true } }, 
+                { pressure: 1, get_time: 1 }
+            ).sort({ get_time: -1 });
+            
+            // Formatage des données pour le frontend avec datetime individuel pour chaque mesure
             const data = [{
                 sensor_id: sensorId,
-                temperature: temperature,
-                humidity: humidity,
-                pressure: pressure,
-                datetime: tempData ? tempData.get_time.toISOString() : new Date().toISOString()
+                temperature: tempData ? tempData.temperature : null,
+                temperature_datetime: tempData ? tempData.get_time.toISOString() : null,
+                humidity: humidityData ? humidityData.humidity : null,
+                humidity_datetime: humidityData ? humidityData.get_time.toISOString() : null,
+                pressure: pressureData ? pressureData.pressure : null,
+                pressure_datetime: pressureData ? pressureData.get_time.toISOString() : null
             }];
             
             res.write(`data: ${JSON.stringify(data)}\n\n`);
