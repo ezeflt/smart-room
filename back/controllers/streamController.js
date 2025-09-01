@@ -56,12 +56,19 @@ const weatherStream = (req, res) => {
             const humidity = await getHumidityBySensor(sensorId);
             const pressure = await getPressureBySensor(sensorId);
             
+            // Récupérer le datetime de la dernière mesure (utiliser celui de la température comme référence)
+            const tempData = await SensorStat.findOne(
+                { sensor_id: sensorId, temperature: { $exists: true } }, 
+                { get_time: 1 }
+            ).sort({ get_time: -1 });
+            
             // Formatage des données pour le frontend
             const data = [{
                 sensor_id: sensorId,
                 temperature: temperature,
                 humidity: humidity,
-                pressure: pressure
+                pressure: pressure,
+                datetime: tempData ? tempData.get_time.toISOString() : new Date().toISOString()
             }];
             
             res.write(`data: ${JSON.stringify(data)}\n\n`);
