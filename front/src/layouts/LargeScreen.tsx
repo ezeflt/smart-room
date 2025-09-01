@@ -33,7 +33,7 @@ const LargeScreen = ({ page, degreeCelcius, handleClickToScreen, handleRoomSelec
             </div>
             <div className="room-column">
                 {rooms.map((room, i) => {
-                    const hasAccess = user.roomsIdAccess.includes(room._id);
+                    const hasAccess = user.roomsIdAccess?.includes(room._id);
                     const disabled = isAlarmpage && !hasAccess;
                     const isSelected = globalState.selectedRoom === room._id;
                     const btnClass = `room-btn${isSelected ? ' selected' : ''}${disabled ? ' disabled' : ''}`;
