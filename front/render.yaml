@@ -1,10 +1,9 @@
 services:
-  # Frontend React Service
   - type: web
     name: smart-room-frontend
     runtime: static
     buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
+    staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
         value: https://smart-room-api.onrender.com
@@ -12,5 +11,5 @@ services:
         value: production
     routes:
       - type: rewrite
-        source: /(.*)
+        source: /*
         destination: /index.html
