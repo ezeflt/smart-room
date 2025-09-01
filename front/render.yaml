@@ -1,4 +1,5 @@
 services:
+  # Frontend React Service
   - type: web
     name: smart-room-frontend
     runtime: static
