@@ -175,7 +175,7 @@ const getUserByEmail = async (req, res) => {
 
 const updateUser = async (req, res) => {
     const { userId } = req.params;
-    const { username, mail, password } = req.body;
+    const { username, mail, password, role } = req.body;
 
     try {
         const updateFields = {};
@@ -188,6 +188,8 @@ const updateUser = async (req, res) => {
             const hashedPassword = await bcrypt.hash(password, salt);
             updateFields.password = hashedPassword;
         }
+
+        if (role) updateFields.role = role;
 
         const updatedUser = await User.findByIdAndUpdate(
             userId,
