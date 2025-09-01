@@ -13,7 +13,9 @@ import config from '../config.json';
 import { initAuthFromStorage } from './store/user';
 
 function App() {
-    const isNotLoginPage = useLocation().pathname !== '/login';
+    const location = useLocation();
+    const isNotLoginPage = location.pathname !== '/login';
+    const isWeather = location.pathname === '/weather' || location.pathname.startsWith('/weather/');
     const user = useSelector<State, UserState>(userSelector);
     const dispatch = useDispatch();
 
@@ -91,9 +93,13 @@ function App() {
     return (
         <div className="app">
             {isNotLoginPage && <Header />}
-            <div id="container">
+            {!isWeather ? (
+                <div id="container">
+                    <Outlet />
+                </div>
+            ) : (
                 <Outlet />
-            </div>
+            )}
         </div>
     );
 }
