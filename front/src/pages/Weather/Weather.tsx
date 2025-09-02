@@ -87,7 +87,7 @@ const Weather = () => {
     }, [global.selectedRoom]);
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div className="weather-page">
         <Modal open={modalOpen} onClose={() => setModalOpen(false)} message={modalMessage || ''} />
         <LargeScreen page={Page.Weather} degreeCelcius={lastTemperature ?? 0} handleRoomSelect={handleRoomSelect} />
       <RowStatistics lastHumidity={lastHumidity} lastPressure={lastPressure} />

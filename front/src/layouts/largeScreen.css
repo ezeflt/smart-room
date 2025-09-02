@@ -81,7 +81,7 @@
 }
 
 .text.weather {
-    font-size: 150px !important;
+    font-size: clamp(72px, 9vw, 150px) !important;
 }
 
 .room-column {
@@ -137,6 +137,8 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        height: auto;
+        min-height: 350px;
     }
     
     .room-column {
@@ -152,9 +154,12 @@
         font-size: 50px !important;
     }
     
-    .large-screen-container {
-        height: auto;
-        min-height: 350px;
+    .text.weather {
+        font-size: 80px !important;
+    }
+    
+    .screen {
+        width: 90%;
     }
     
     .alarm-history-item {
@@ -165,6 +170,37 @@
     
     .alarm-history-container {
         gap: 10px;
+    }
+}
+
+@media (max-width: 600px) {
+    .large-screen-container {
+        height: auto;
+        min-height: 300px;
+        margin: 10px 0;
+    }
+    
+    .screen {
+        width: 95%;
+    }
+    
+    .text.weather {
+        font-size: 60px !important;
+    }
+    
+    .room {
+        font-size: 18px;
+        padding: 20px;
+    }
+    
+    .room-column {
+        gap: 8px;
+        padding: 15px 0;
+    }
+    
+    .room-btn {
+        font-size: 18px;
+        padding: 8px 16px;
     }
 }
 
