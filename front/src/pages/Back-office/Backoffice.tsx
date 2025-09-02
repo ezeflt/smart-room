@@ -131,7 +131,7 @@ const BackOffice = () => {
 
     // Mutation pour créer un utilisateur
     const createUserMutation = useMutation({
-        mutationFn: async (userData: { username: string; mail: string; password: string; role: string }) => {
+        mutationFn: async (userData: { username: string; mail: string; password: string; confirmPassword: string; role: string }) => {
             return await createUser(userData);
         },
         onSuccess: () => {
@@ -151,6 +151,7 @@ const BackOffice = () => {
                 username: newUser.username,
                 mail: newUser.mail,
                 password: newUser.password,
+                confirmPassword: newUser.confirmPassword,
                 role: newUser.role
             });
         } else if (newUser.password !== newUser.confirmPassword) {
