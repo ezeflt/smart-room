@@ -7,6 +7,7 @@ import Office from './pages/Office/Office';
 import Login from './pages/Login/Login';
 import BackOffice from './pages/Back-office/Backoffice';
 import Portfolio from './pages/Portfolio/portfolio';
+import PageNotFound from './pages/PageNotFound/PageNotFound';
 
 const AppRoutes = createBrowserRouter([
     {
@@ -37,6 +38,10 @@ const AppRoutes = createBrowserRouter([
             {
                 path: '/',
                 element: <Portfolio />,
+            },
+            {
+                path: '*',
+                element: <PageNotFound />,
             },
         ],
     },
