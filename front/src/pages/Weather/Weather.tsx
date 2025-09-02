@@ -9,11 +9,9 @@ import RowStatistics from './RowStatistics';
 import { useLocation } from 'react-router-dom';
 import Modal from '../../atoms/Modal';
 import { GlobalState, setSelectedRoom } from '../../store/global';
-import config from '../../../config.json';
 import LargeScreen from '../../layouts/LargeScreen';
 import { Page } from '../../global.interface';
-
-
+const SERVER_URL = import.meta.env.VITE_API as string;
 
 const Weather = () => {
     const dispatch = useDispatch();
@@ -44,9 +42,11 @@ const Weather = () => {
     }, [location.state, hasShownAlert]);
 
     useEffect(() => {
-        if (!global.selectedRoom) return;
+        if (!global.selectedRoom) {
+            return
+        };
 
-        const uri = `${config.api}/weather/stream?room_id=${global.selectedRoom}`;
+        const uri = `${SERVER_URL}/weather/stream?room_id=${global.selectedRoom}`;
         console.log('Connexion au flux météo avec URI:', uri);
         const eventSource = new EventSource(uri);
         eventSource.onmessage = (event) => {
@@ -87,7 +87,7 @@ const Weather = () => {
     }, [global.selectedRoom]);
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div className="weather-page">
         <Modal open={modalOpen} onClose={() => setModalOpen(false)} message={modalMessage || ''} />
         <LargeScreen page={Page.Weather} degreeCelcius={lastTemperature ?? 0} handleRoomSelect={handleRoomSelect} />
       <RowStatistics lastHumidity={lastHumidity} lastPressure={lastPressure} />

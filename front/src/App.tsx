@@ -9,11 +9,16 @@ import { setAlarmStatus } from './store/user';
 import { setRooms, setSelectedRoom } from './store/global';
 import { getMe, getRooms } from './protocol/api';
 import { Room } from './store/global';
-import config from '../config.json';
 import { initAuthFromStorage } from './store/user';
+const SERVER_URL = import.meta.env.VITE_API as string;
 
 function App() {
-    const isNotLoginPage = useLocation().pathname !== '/login';
+    const location = useLocation();
+    const knownPaths = ['/', '/alarm', '/weather', '/office', '/login', '/admin'];
+    const isKnownPath = knownPaths.some((p) => location.pathname === p || location.pathname.startsWith(p + '/'));
+    const shouldShowHeader = location.pathname !== '/login' && isKnownPath;
+    const isWeather = location.pathname === '/weather' || location.pathname.startsWith('/weather/');
+
     const user = useSelector<State, UserState>(userSelector);
     const dispatch = useDispatch();
 
@@ -50,7 +55,7 @@ function App() {
         if (!user.token) {
             return
         };
-        const eventSource = new EventSource(`${config.api}/room/status/stream?token=${user.token}`);
+        const eventSource = new EventSource(`${SERVER_URL}/room/status/stream?token=${user.token}`);
         eventSource.onmessage = (event) => {
             console.log('event.data', JSON.parse(event.data));
             dispatch(setAlarmStatus({ alarmStatus: JSON.parse(event.data) as AlarmStatusTuple }));
@@ -80,7 +85,7 @@ function App() {
     useEffect(() => {
         if (!user.email) return;
         console.log(user.email);
-        fetch(`${config.api}/user/${user.email}`, {
+        fetch(`${SERVER_URL}/user/${user.email}`, {
             method: 'GET',
         }).then(res => res.json()).then(data => {
             console.log(data);
@@ -90,10 +95,14 @@ function App() {
     
     return (
         <div className="app">
-            {isNotLoginPage && <Header />}
-            <div id="container">
+            {shouldShowHeader && <Header />}
+            {!isWeather ? (
+                <div id="container">
+                    <Outlet />
+                </div>
+            ) : (
                 <Outlet />
-            </div>
+            )}
         </div>
     );
 }

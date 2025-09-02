@@ -1,0 +1,88 @@
+.pnf-container {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    overflow: hidden;
+    width: 100%;
+}
+
+.pnf-background {
+    position: absolute;
+    inset: 0;
+    background: url('../../assets/weather-background.jpg') center/cover no-repeat;
+    opacity: 0.12;
+}
+
+.pnf-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 2rem;
+    max-width: 520px;
+    width: 90%;
+}
+
+.pnf-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin-bottom: 1rem;
+}
+
+.pnf-title {
+    font-size: 5rem;
+    margin: 0;
+    line-height: 1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.pnf-subtitle {
+    color: #333;
+    margin: 0.5rem 0 1.5rem 0;
+}
+
+.pnf-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.pnf-button {
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    color: #333;
+    background: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.pnf-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.pnf-button.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+}
+
+@media (max-width: 480px) {
+    .pnf-title {
+        font-size: 3.5rem;
+    }
+    .pnf-actions {
+        flex-direction: column;
+    }
+    .pnf-button {
+        width: 100%;
+        text-align: center;
+    }
+}

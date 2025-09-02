@@ -13,6 +13,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  width: 100%;
+  overflow-x: hidden;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -24,10 +29,11 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  display: block;
+  width: 100%;
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 h1 {
@@ -64,5 +70,36 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+
+/* Responsive global */
+@media (max-width: 768px) {
+  body {
+    min-width: 280px;
+  }
+  
+  h1 {
+    font-size: 2.5em;
+  }
+  
+  button {
+    padding: 0.5em 1em;
+    font-size: 0.9em;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    min-width: 250px;
+  }
+  
+  h1 {
+    font-size: 2em;
+  }
+  
+  button {
+    padding: 0.4em 0.8em;
+    font-size: 0.8em;
   }
 }

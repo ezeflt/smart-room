@@ -15,6 +15,8 @@ const { setLastAlarmUser, getLastAlarmUser } = require('./alarmUserStore');
 const mongoURL = process.env.MONGO_URL;
 const RoomSensor = require("../models/roomsensor.js");
 const Room = require("../models/room.js");
+const UserSensor = require("../models/usersensor.js");
+const User = require("../models/user.js");
 
 connectdb();
 
@@ -36,9 +38,16 @@ async function insertSensorState(sensorData) {
     }
 
     try {
-        const alarme = await Alarme.findOne();
-        if (!alarme || alarme.action !== 'active') {
-            console.log("Insertion bloquée : l'alarme est désactivée.");
+        // Vérifier l'état de l'alarme pour la salle du capteur
+        const roomSensorForCheck = await RoomSensor.findOne({ sensor_id: sensorData.source_address });
+        const roomIdForCheck = roomSensorForCheck ? roomSensorForCheck.room_id : null;
+        if (!roomIdForCheck) {
+            console.log(`Insertion bloquée : impossible d'identifier la salle pour le capteur ${sensorData.source_address}.`);
+            return;
+        }
+        const lastRoomAlarm = await Alarme.findOne({ room_id: roomIdForCheck }).sort({ timestamp: -1 });
+        if (!lastRoomAlarm || lastRoomAlarm.action !== 'active') {
+            console.log(`Insertion bloquée : l'alarme de la salle (${roomIdForCheck}) est désactivée.`);
             return;
         }
 
@@ -58,8 +67,15 @@ async function insertSensorState(sensorData) {
 
         // Envoi d'email si trigger
         if (actionValue === 'trigger') {
-            const alarmUser = getLastAlarmUser();
-            if (alarmUser && alarmUser.mail) {
+            // Récupérer tous les utilisateurs associés à ce capteur
+            const userSensorLinks = await UserSensor.find({ sensor_id: sensorData.source_address }).populate('user_id');
+            const recipientMails = userSensorLinks
+                .map(link => link?.user_id?.mail)
+                .filter(Boolean);
+
+            if (!recipientMails || recipientMails.length === 0) {
+                console.log(`Aucun utilisateur associé au capteur ${sensorData.source_address} pour recevoir l'alerte.`);
+            } else {
                 // Formatage personnalisé de la date
                 let formattedDate = '';
                 if (detection.time_detection) {
@@ -75,30 +91,24 @@ async function insertSensorState(sensorData) {
                         hour12: false
                     }).replace(',', '');
                 }
-                // 1. Trouver le capteur par son numéro
-                const sensorDoc = await Sensor.findOne({ sensor_id: sensorData.source_address });
-                let roomName = 'inconnue';
-                if (sensorDoc) {
-                    // 2. Trouver la salle associée à ce capteur (via l'ObjectId)
-                    const roomSensor = await RoomSensor.findOne({ sensor_id: sensorData.source_address }).populate('room_id');
-                    if (roomSensor && roomSensor.room_id && roomSensor.room_id.name) {
-                        roomName = roomSensor.room_id.name;
-                    }
-                }
+
+                // Trouver la salle associée à ce capteur
+                const roomSensor = await RoomSensor.findOne({ sensor_id: sensorData.source_address }).populate('room_id');
+                const roomName = (roomSensor && roomSensor.room_id && roomSensor.room_id.name) ? roomSensor.room_id.name : 'inconnue';
+
                 const mailOptions = {
                     from: process.env.GMAIL_USER,
-                    to: alarmUser.mail,
+                    to: recipientMails.join(','),
                     subject: `Alerte Sécurité : Mouvement Détecté - ${roomName}`,
                     text: `🚨 ALERTE SÉCURITÉ 🚨\n\nCher utilisateur,\n\nNous vous informons qu'un mouvement a été détecté dans vos locaux.\n\n📅 Date et heure : ${formattedDate}\n📍 Salle : ${roomName}\nCapteur (source_address) : ${sensorData.source_address}\n\n⚠️ Veuillez prendre les mesures nécessaires et vérifier la zone concernée.\n\nCeci est un message automatique, merci de ne pas y répondre.\n\nCordialement,\nVotre système de sécurité Smart Room`
                 };
+
                 transporter.sendMail(mailOptions, (error, info) => {
                     if (error) {
                         return console.error('Erreur lors de l\'envoi de l\'email via Gmail :', error);
                     }
-                    console.log('Email de notification envoyé avec succès via Gmail :', info.response);
+                    console.log(`Email d'alerte envoyé à ${recipientMails.length} destinataire(s) :`, info.response);
                 });
-            } else {
-                console.log('Aucun utilisateur connecté pour recevoir l\'alerte.');
             }
         }
     } catch (err) {
