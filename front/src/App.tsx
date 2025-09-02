@@ -13,7 +13,8 @@ import config from '../config.json';
 import { initAuthFromStorage } from './store/user';
 
 function App() {
-    const isNotLoginPage = useLocation().pathname !== '/login';
+    const pathname = useLocation().pathname;
+    const shouldShowHeader = pathname !== '/login' && pathname !== '/';
     const user = useSelector<State, UserState>(userSelector);
     const dispatch = useDispatch();
 
@@ -90,7 +91,7 @@ function App() {
     
     return (
         <div className="app">
-            {isNotLoginPage && <Header />}
+            {shouldShowHeader && <Header />}
             <div id="container">
                 <Outlet />
             </div>

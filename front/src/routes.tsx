@@ -6,6 +6,7 @@ import Alarm from './pages/Alarm/Alarm';
 import Office from './pages/Office/Office';
 import Login from './pages/Login/Login';
 import BackOffice from './pages/Back-office/Backoffice';
+import Portfolio from './pages/Portfolio/portfolio';
 
 const AppRoutes = createBrowserRouter([
     {
@@ -15,15 +16,15 @@ const AppRoutes = createBrowserRouter([
             {
                 index: true,
                 path: '/alarm',
-                element: <Alarm/>,
+                element: <Alarm />,
             },
             {
                 path: '/weather',
-                element: <Weather/>,
+                element: <Weather />,
             },
             {
                 path: '/office',
-                element: <Office/>,
+                element: <Office />,
             },
             {
                 path: '/login',
@@ -34,8 +35,8 @@ const AppRoutes = createBrowserRouter([
                 element: <BackOffice />,
             },
             {
-                path: '*',
-                element: <></>,
+                path: '/',
+                element: <Portfolio />,
             },
         ],
     },
