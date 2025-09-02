@@ -10,13 +10,13 @@ import { setRooms, setSelectedRoom } from './store/global';
 import { getMe, getRooms } from './protocol/api';
 import { Room } from './store/global';
 import { initAuthFromStorage } from './store/user';
-const SERVER_URL = import.meta.env.VITE_API as string;
+const SERVER_URL = (import.meta as any).env.VITE_API as string;
 
 function App() {
     const location = useLocation();
     const knownPaths = ['/', '/alarm', '/weather', '/office', '/login', '/admin'];
     const isKnownPath = knownPaths.some((p) => location.pathname === p || location.pathname.startsWith(p + '/'));
-    const shouldShowHeader = location.pathname !== '/login' && isKnownPath;
+    const shouldShowHeader = isKnownPath && location.pathname !== '/login' && location.pathname !== '/';
     const isWeather = location.pathname === '/weather' || location.pathname.startsWith('/weather/');
 
     const user = useSelector<State, UserState>(userSelector);
