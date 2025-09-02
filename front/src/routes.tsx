@@ -6,7 +6,7 @@ import Alarm from './pages/Alarm/Alarm';
 import Office from './pages/Office/Office';
 import Login from './pages/Login/Login';
 import BackOffice from './pages/Back-office/Backoffice';
-import Portfolio from './pages/Portfolio/portfolio';
+import Portfolio from './pages/Portfolio/Portfolio';
 import PageNotFound from './pages/PageNotFound/PageNotFound';
 
 const AppRoutes = createBrowserRouter([

@@ -9,8 +9,8 @@ import { setAlarmStatus } from './store/user';
 import { setRooms, setSelectedRoom } from './store/global';
 import { getMe, getRooms } from './protocol/api';
 import { Room } from './store/global';
-import config from '../config.json';
 import { initAuthFromStorage } from './store/user';
+const SERVER_URL = import.meta.env.VITE_API as string;
 
 function App() {
     const location = useLocation();
@@ -55,7 +55,7 @@ function App() {
         if (!user.token) {
             return
         };
-        const eventSource = new EventSource(`${config.api}/room/status/stream?token=${user.token}`);
+        const eventSource = new EventSource(`${SERVER_URL}/room/status/stream?token=${user.token}`);
         eventSource.onmessage = (event) => {
             console.log('event.data', JSON.parse(event.data));
             dispatch(setAlarmStatus({ alarmStatus: JSON.parse(event.data) as AlarmStatusTuple }));
@@ -85,7 +85,7 @@ function App() {
     useEffect(() => {
         if (!user.email) return;
         console.log(user.email);
-        fetch(`${config.api}/user/${user.email}`, {
+        fetch(`${SERVER_URL}/user/${user.email}`, {
             method: 'GET',
         }).then(res => res.json()).then(data => {
             console.log(data);
