@@ -1,11 +1,12 @@
 .header-header {
-    width: 100vw;
+    width: 100%;
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     min-height: 80px;
     margin-bottom: 40px;
+    overflow-x: hidden;
 }
 
 .header-left {
@@ -14,8 +15,8 @@
 }
 
 .header-logo {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
 }
 
 .header-title {
@@ -67,9 +68,61 @@
     }
 }
 
+@media (max-width: 768px) {
+    .header-header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem 0.5rem;
+    }
+    
+    .header-center {
+        gap: 1rem;
+        order: 2;
+    }
+    
+    .header-left {
+        order: 1;
+    }
+    
+    .header-right {
+        order: 3;
+        padding-right: 0;
+    }
+    
+    .header-link {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-header {
+        padding: 0.5rem;
+    }
+    
+    .header-center {
+        gap: 0.5rem;
+    }
+    
+    .header-link {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+        margin: 0 0.2rem;
+    }
+    
+    .header-logo {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .header-title {
+        font-size: 0.8rem;
+    }
+}
+
 .navbar {
     height: auto;
-    min-width: 100vw;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
