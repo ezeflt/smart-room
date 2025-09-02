@@ -12,7 +12,7 @@ import React from 'react';
 import LargeScreen from '../../layouts/LargeScreen';
 import { Page } from '../../global.interface';
 import { useNavigate } from 'react-router-dom';
-import config from '../../../config.json';
+const SERVER_URL = import.meta.env.VITE_API as string;
 
 const Alarm = () => {
     const dispatch = useDispatch();
@@ -60,7 +60,7 @@ const Alarm = () => {
             }
             // Utiliser l'ID de la room sélectionnée pour la requête
             const query = selectedRoom ? `room_id=${selectedRoom._id}&token=${user.token}` : '';
-            const URI = selectedRoom ? `${config.api}/alarm/stream?${query}` : '';
+            const URI = selectedRoom ? `${SERVER_URL}/alarm/stream?${query}` : '';
 
             const eventSource = new EventSource(URI);
             eventSource.onmessage = (event) => {
