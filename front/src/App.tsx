@@ -13,12 +13,10 @@ import config from '../config.json';
 import { initAuthFromStorage } from './store/user';
 
 function App() {
-
-    const pathname = useLocation().pathname;
-    const shouldShowHeader = pathname !== '/login' && pathname !== '/';
-
     const location = useLocation();
-    const isNotLoginPage = location.pathname !== '/login';
+    const knownPaths = ['/', '/alarm', '/weather', '/office', '/login', '/admin'];
+    const isKnownPath = knownPaths.some((p) => location.pathname === p || location.pathname.startsWith(p + '/'));
+    const shouldShowHeader = location.pathname !== '/login' && isKnownPath;
     const isWeather = location.pathname === '/weather' || location.pathname.startsWith('/weather/');
 
     const user = useSelector<State, UserState>(userSelector);
@@ -97,17 +95,12 @@ function App() {
     
     return (
         <div className="app">
-
             {shouldShowHeader && <Header />}
-            <div id="container">
-
-            {isNotLoginPage && <Header />}
             {!isWeather ? (
                 <div id="container">
                     <Outlet />
                 </div>
             ) : (
-
                 <Outlet />
             )}
         </div>

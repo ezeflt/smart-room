@@ -411,6 +411,12 @@
         justify-content: center;
     }
 
+    .hero-image {
+        width: 60vw;
+        max-width: 380px;
+        height: auto;
+    }
+
     .smart-room-preview {
         width: 300px;
         height: 200px;
@@ -438,6 +444,12 @@
 @media (max-width: 480px) {
     .hero-title {
         font-size: 2rem;
+    }
+
+    .hero-image {
+        width: 70vw;
+        max-width: 260px;
+        height: auto;
     }
 
     .features-grid {
