@@ -2,7 +2,8 @@
 
 html, body {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
+  height: auto;
   margin: 0;
   padding: 0;
 }
@@ -11,14 +12,15 @@ html, body {
     display: flex;
     flex-direction: column;
     position: relative;
-    height: 100vh;
+    min-height: 100vh;
+    height: auto;
     background-color: #fff;
     z-index: 1;
 }
 
 .app::before {
     content: '';
-    position: absolute;
+    position: fixed;
     inset: 0;
     background-image: url('/src/assets/weather-background.jpg');
     background-size: cover;
@@ -30,6 +32,6 @@ html, body {
 
 #container {
     display: flex;
-    height: 100vh;
-    width: 100vw;
+    width: 100%;
+    height: auto;
 }

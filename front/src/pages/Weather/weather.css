@@ -1,1 +1,68 @@
 @import url('https://fonts.googleapis.com/css2?family=Jaro:opsz@6..72&display=swap');
+
+/* Styles de base pour la page Weather */
+.weather-page {
+  padding: 2rem;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* Responsive pour tablettes */
+@media (max-width: 1024px) {
+  .weather-page {
+    padding: 1.5rem;
+  }
+}
+
+/* Responsive pour mobiles */
+@media (max-width: 768px) {
+  .weather-page {
+    padding: 1rem;
+  }
+}
+
+/* Responsive pour très petits écrans */
+@media (max-width: 480px) {
+  .weather-page {
+    padding: 0.5rem;
+  }
+}
+
+/* Ajustements pour les composants enfants */
+@media (max-width: 768px) {
+  /* Réduire la taille des éléments sur mobile */
+  .large-screen-container {
+    height: 35vh !important;
+    min-height: 250px !important;
+  }
+  
+  .text.weather {
+    font-size: 80px !important;
+  }
+  
+  .room {
+    font-size: 20px !important;
+    padding: 15px !important;
+  }
+  
+  .room-btn {
+    font-size: 16px !important;
+    padding: 8px 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .text.weather {
+    font-size: 60px !important;
+  }
+  
+  .room {
+    font-size: 16px !important;
+    padding: 10px !important;
+  }
+  
+  .room-btn {
+    font-size: 14px !important;
+    padding: 6px 12px !important;
+  }
+}
