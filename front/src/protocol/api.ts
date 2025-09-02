@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { AlarmResponse } from './api.interface';
 import { getAuthToken } from '../store/user';
-import config from '../../config.json';
+const SERVER_URL = import.meta.env.VITE_API as string;
 
 const api = axios.create({
-    baseURL: config.api,
+    baseURL: SERVER_URL,
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',

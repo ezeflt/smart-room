@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateUser, deleteUser, createUser, checkAdminStatus } from '../../protocol/api';
 import { getAuthToken } from '../../store/user';
-import config from '../../../config.json';
+const SERVER_URL = import.meta.env.VITE_API as string;
 
 interface User {
     _id: string;
@@ -83,7 +83,7 @@ const BackOffice = () => {
             if (!token) {
                 throw new Error('Token not found');
             }
-            const response = await fetch(`${config.api}/user`, {
+            const response = await fetch(`${SERVER_URL}/user`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -103,7 +103,7 @@ const BackOffice = () => {
             if (!token) {
                 throw new Error('Token not found');
             }
-            const response = await fetch(`${config.api}/rooms`, {
+            const response = await fetch(`${SERVER_URL}/rooms`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -196,7 +196,7 @@ const BackOffice = () => {
             if (!token) {
                 throw new Error('Token not found');
             }
-            const response = await fetch(`${config.api}/user/${userId}/rooms`, {
+            const response = await fetch(`${SERVER_URL}/user/${userId}/rooms`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -251,7 +251,7 @@ const BackOffice = () => {
             if (!token) {
                 throw new Error('Token not found');
             }
-            const response = await fetch(`${config.api}/user/${userId}/rooms`, {  
+            const response = await fetch(`${SERVER_URL}/user/${userId}/rooms`, {  
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
