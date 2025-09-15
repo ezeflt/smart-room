@@ -12,8 +12,5 @@ const userSensorSchema = new mongoose.Schema({
   },
 });
 
-// Assure unicité user-sensor
-userSensorSchema.index({ user_id: 1, sensor_id: 1 }, { unique: true });
-
 const UserSensor = mongoose.model("UserSensor", userSensorSchema);
 module.exports = UserSensor;

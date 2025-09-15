@@ -10,15 +10,19 @@ const server = http.createServer(app);
 require("dotenv").config();
 const PORT = process.env.PORT;
 
-// Middlewares
-// Check CORS policy
+// Middlewares - Validation des requête du domaine front
 app.use(cors());
+
+// Middlewares - Parse du contenu json
 app.use(express.json());
 
+// Middlewares - Connexion à la base de données
 connectDB();
 
-app.use('/',routes);
+// Middlewares - Routes
+app.use('/', routes);
 
+// Server
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

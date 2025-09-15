@@ -137,7 +137,7 @@ const login = async (req, res) => {
     }
 }
 
-const getUser = async (req, res) => {
+const getUsers = async (req, res) => {
     try {
         
         const users = await User.find({})
@@ -173,7 +173,7 @@ const getUserByEmail = async (req, res) => {
     });
 }
 
-const updateUser = async (req, res) => {
+const updateUserById = async (req, res) => {
     const { userId } = req.params;
     const { username, mail, password, role } = req.body;
 
@@ -226,7 +226,7 @@ const updateUser = async (req, res) => {
     }
 };
 
-const deleteUser = async (req, res) => {
+const deleteUserById = async (req, res) => {
     const { userId } = req.params;
 
     try {
@@ -268,7 +268,7 @@ const logout = async (req, res) => {
     });
 }
 
-const getMe = async (req, res) => {
+const getUser = async (req, res) => {
     try {
         // req.user est défini par le middleware authenticateToken
         const userId = req.user.userId;
@@ -328,4 +328,4 @@ const getUserRoomsInfo = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUser, getUserByEmail, updateUser, deleteUser, logout, getMe, getUserRoomsInfo };
+module.exports = { register, login, getUser, getUserByEmail, updateUserById, deleteUserById, logout, getUsers, getUserRoomsInfo };

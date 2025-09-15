@@ -54,7 +54,7 @@ export const login = async (mail: string, password: string) => {
     return res.data;
 };
 
-export const updateUser = async (userId: string, userData: { username?: string; mail?: string; password?: string }) => {
+export const updateUserById = async (userId: string, userData: { username?: string; mail?: string; password?: string }) => {
     const token = localStorage.getItem('token');
     const res = await api.put(`user/${userId}`, userData, {
         headers: {
@@ -64,7 +64,7 @@ export const updateUser = async (userId: string, userData: { username?: string; 
     return res.data;
 };
 
-export const deleteUser = async (userId: string) => {
+export const deleteUserById = async (userId: string) => {
     const token = localStorage.getItem('token');
     const res = await api.delete(`user/${userId}`, {
         headers: {
@@ -81,12 +81,12 @@ export const createUser = async (userData: { username: string; mail: string; pas
 
 // Vérifier si l'utilisateur connecté est admin
 export const checkAdminStatus = async () => {
-    const res = await api.get('/user/me');
+    const res = await api.get('/user');
     // Le backend renvoie { user: { role: "admin" } }, on extrait le rôle
     return { role: res.data.user.role };
 };
 
-export const getMe = async () => {
-    const res = await api.get('/user/me');
+export const getUser = async () => {
+    const res = await api.get('/user');
     return res.data;
 };
