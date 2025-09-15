@@ -4,10 +4,12 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite",
+        "dev": "vite --host 0.0.0.0 --port 5173",
         "build": "vite build",
         "lint": "eslint .",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "start:local": "ENVIRONMENT=local vite --host 0.0.0.0 --port 5173",
+        "start:prod": "ENVIRONMENT=prod vite --host 0.0.0.0 --port 5173"
     },
     "dependencies": {
         "@reduxjs/toolkit": "^2.8.2",
