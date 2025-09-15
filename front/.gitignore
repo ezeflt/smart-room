@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 mock.ts
 .env
+src/config.json
+front/src/config.json

@@ -13,11 +13,11 @@ import LargeScreen from '../../layouts/LargeScreen';
 import { Page } from '../../global.interface';
 import { useNavigate } from 'react-router-dom';
 import config from '../../config.json';
+import { getApiKey } from '../../utils';
 
-const prodApiKey = (import.meta as any).env.VITE_API as string;
-const localApiKey = (config as any).VITE_API as string;
-const ENV = (process as any)?.env?.ENVIRONMENT || (import.meta as any).env.VITE_ENVIRONMENT as string;
-const SERVER_URL = ENV === 'local' ? localApiKey : prodApiKey;
+const SERVER_URL = getApiKey();
+
+// Fonction pour obtenir l'URL de l'API en fonction de l'environnement
 
 const Alarm = () => {
     const dispatch = useDispatch();
