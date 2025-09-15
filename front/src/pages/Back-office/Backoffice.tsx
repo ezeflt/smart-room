@@ -4,7 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateUser, deleteUser, createUser, checkAdminStatus } from '../../protocol/api';
 import { getAuthToken } from '../../store/user';
-const SERVER_URL = import.meta.env.VITE_API as string;
+import config from '../../config.json';
+const prodApiKey = (import.meta as any).env.VITE_API as string;
+const localApiKey = (config as any).VITE_API as string;
+const ENV = (process as any)?.env?.ENVIRONMENT || (import.meta as any).env.VITE_ENVIRONMENT as string;
+const SERVER_URL = ENV === 'local' ? localApiKey : prodApiKey;
 
 interface User {
     _id: string;
