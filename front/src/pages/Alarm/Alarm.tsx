@@ -12,7 +12,12 @@ import React from 'react';
 import LargeScreen from '../../layouts/LargeScreen';
 import { Page } from '../../global.interface';
 import { useNavigate } from 'react-router-dom';
-const SERVER_URL = import.meta.env.VITE_API as string;
+import config from '../../config.json';
+
+const prodApiKey = (import.meta as any).env.VITE_API as string;
+const localApiKey = (config as any).VITE_API as string;
+const ENV = (process as any)?.env?.ENVIRONMENT || (import.meta as any).env.VITE_ENVIRONMENT as string;
+const SERVER_URL = ENV === 'local' ? localApiKey : prodApiKey;
 
 const Alarm = () => {
     const dispatch = useDispatch();
