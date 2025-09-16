@@ -2,12 +2,9 @@ const express = require("express");
 const router = express.Router();
 const { register ,getUsers,login, deleteUserById, updateUserById, logout, getUserByEmail, getUser  } = require("../controllers/userController.js");
 const { getRooms, getUserRooms, assignUserRooms } = require("../controllers/roomController.js");
-const { mqttController } = require("../controllers/mqttController.js");
-const { setAlarmUser } = require("../controllers/mqttAlarmController.js");
 const { authenticateToken, authenticateStreamToken } = require("../middleware/auth.js");
 const { activate, deactivate } = require("../controllers/alarmController.js");
 const { weatherStream, alarmStream, roomStatusStream } = require("../controllers/streamController.js");
-const User = require("../models/user.js");
 
 // CRUD - Auth
 router.post("/register", register);

@@ -10,14 +10,14 @@ const server = http.createServer(app);
 require("dotenv").config();
 const PORT = process.env.PORT;
 
+connectDB();
+
 // Middlewares - Validation des requête du domaine front
 app.use(cors());
 
 // Middlewares - Parse du contenu json
 app.use(express.json());
 
-// Middlewares - Connexion à la base de données
-connectDB();
 
 // Middlewares - Routes
 app.use('/', routes);

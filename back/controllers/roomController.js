@@ -1,11 +1,20 @@
 const UserSensor = require("../models/usersensor");
 const RoomSensor = require("../models/roomsensor");
-
-// Récupérer toutes les salles disponibles
+const Room = require("../models/room");
+const Alarm = require("../models/alarm");
+const { getUserRoomIds } = require("./userController");
+const User = require("../models/user");
+/**
+ * Utilisateur : Client
+ * Description : Récupère toutes les salles disponibles
+ * 
+ * @returns - Liste des salles
+ */
 const getRooms = async (req, res) => {
+    
     try {
-        const Room = require("../models/room");
         const rooms = await Room.find().select('_id name');
+
         res.status(200).json({
             rooms: rooms
         });
@@ -18,18 +27,17 @@ const getRooms = async (req, res) => {
     }
 };
 
-// Récupérer les salles assignées à un utilisateur
+/**
+ * Utilisateur : Client
+ * Description : Récupère les salles assignées à un utilisateur
+ * 
+ * @returns - Liste des salles assignées à l'utilisateur
+ */
 const getUserRooms = async (req, res) => {
     try {
         const { userId } = req.params;
         
-        // Récupérer les sensor_id associés à l'utilisateur
-        const userSensors = await UserSensor.find({ user_id: userId }).select('sensor_id');
-        const sensorIds = userSensors.map(us => us.sensor_id);
-        
-        // Récupérer les room_id correspondants
-        const roomSensors = await RoomSensor.find({ sensor_id: { $in: sensorIds } }).select('room_id');
-        const roomIds = roomSensors.map(rs => rs.room_id);
+        const roomIds = await getUserRoomIds(userId);
         
         res.status(200).json({
             roomIds: roomIds
@@ -43,14 +51,20 @@ const getUserRooms = async (req, res) => {
     }
 };
 
-// Assigner des salles à un utilisateur
+
+/**
+ * Utilisateur : Admin
+ * Description : Assigne des salles à un utilisateur
+ * 
+ * @returns - Liste des salles assignées à l'utilisateur
+ */
 const assignUserRooms = async (req, res) => {
     try {
         const { userId } = req.params;
         const { roomIds } = req.body;
         
-        const User = require("../models/user");
         const user = await User.findById(userId);
+
         if (!user) {
             return res.status(404).json({
                 message: "Utilisateur non trouvé",
@@ -58,19 +72,11 @@ const assignUserRooms = async (req, res) => {
             });
         }
         
-        // Supprimer toutes les assignations existantes pour cet utilisateur
-        const deletedCount = await UserSensor.deleteMany({ user_id: userId });
-        console.log(`Suppression de ${deletedCount.deletedCount} assignations existantes pour l'utilisateur ${userId}`);
-        
-        // Pour chaque salle assignée, récupérer ses capteurs et créer les assignations
-        const Room = require("../models/room");
-        const Sensor = require("../models/sensor");
-        
-        let totalAssignments = 0;
+        // Supprime toutes les assignations existantes pour cet utilisateur
+        await UserSensor.deleteMany({ user_id: userId });
         
         for (const roomId of roomIds) {
             const roomSensors = await RoomSensor.find({ room_id: roomId }).select('sensor_id');
-            console.log(`Salle ${roomId} a ${roomSensors.length} capteurs`);
             
             // Créer les assignations utilisateur-capteur
             for (const roomSensor of roomSensors) {
@@ -79,14 +85,11 @@ const assignUserRooms = async (req, res) => {
                         user_id: userId,
                         sensor_id: roomSensor.sensor_id
                     });
-                    totalAssignments++;
                 } catch (assignmentError) {
                     console.error(`Erreur lors de l'assignation du capteur ${roomSensor.sensor_id}:`, assignmentError);
                 }
             }
         }
-        
-        console.log(`Total d'assignations créées: ${totalAssignments}`);
         
         res.status(200).json({
             message: "Salles assignées avec succès",
@@ -101,12 +104,14 @@ const assignUserRooms = async (req, res) => {
     }
 };
 
-// recupere le status et l'id des 3 rooms
+/**
+ * Utilisateur : Client
+ * Description : Récupère le statut et l'id des salles
+ * 
+ * @returns - Liste des salles avec leur statut
+ */
 const getRoomsStatus = async () => {
-    try {
-        const Room = require("../models/room");
-        const Alarm = require("../models/alarm");
-        
+    try {        
         // Récupérer toutes les salles
         const rooms = await Room.find().select('_id name');
         
