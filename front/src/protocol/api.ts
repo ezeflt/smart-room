@@ -1,11 +1,8 @@
 import axios from 'axios';
 import { AlarmResponse } from './api.interface';
 import { getAuthToken } from '../store/user';
-import config from '../config.json';
-const prodApiKey = (import.meta as any).env.VITE_API as string;
-const localApiKey = (config as any).VITE_API as string;
-const ENV = (process as any)?.env?.ENVIRONMENT || (import.meta as any).env.VITE_ENVIRONMENT as string;
-const SERVER_URL = (ENV === 'local' ? localApiKey : prodApiKey) as string;
+import { getApiKey } from '../utils';
+const SERVER_URL = getApiKey();
 
 const api = axios.create({
     baseURL: SERVER_URL,

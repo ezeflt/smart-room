@@ -10,11 +10,8 @@ import { setRooms, setSelectedRoom } from './store/global';
 import { getUser, getRooms } from './protocol/api';
 import { Room } from './store/global';
 import { initAuthFromStorage } from './store/user';
-import config from './config.json';
-const prodApiKey = (import.meta as any).env.VITE_API as string;
-const localApiKey = (config as any).VITE_API as string;
-const ENV = (process as any)?.env?.ENVIRONMENT || (import.meta as any).env.VITE_ENVIRONMENT as string;
-const SERVER_URL = ENV === 'local' ? localApiKey : prodApiKey;
+import { getApiKey } from './utils';
+const SERVER_URL = getApiKey();
 
 function App() {
     const location = useLocation();
