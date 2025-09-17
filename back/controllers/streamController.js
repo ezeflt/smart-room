@@ -92,15 +92,17 @@ const alarmStream = async (req, res) => {
     const user =  await User.findOne({ mail: req.user.mail });
     
     if (!room_id) {
-        res.status(400).json({ error: "Room ID is required" });
+        res.write(`event: error\ndata: ${JSON.stringify({ error: "Room ID is required" })}\n\n`);
+        res.end();
         return;
     }
 
     // Vérifier l'accès à la room via les tables de liaison
-    const hasAccess = await checkRoomAccess(user, room_id);
+    const hasAccess = await checkRoomAccess(user ? user._id : null, room_id);
 
     if (!hasAccess) {
-        res.status(403).json({ error: "Access denied" });
+        res.write(`data: ${JSON.stringify({ status: "off", error: "Access denied" })}\n\n`);
+        res.end();
         return;
     }
 
