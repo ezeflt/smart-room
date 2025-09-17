@@ -1,9 +1,8 @@
 const mongoose = require("mongoose");
 
-
 const roomSensorSchema = new mongoose.Schema({
   sensor_id: {
-    type: Number, // <-- DOIT être Number !
+    type: Number,
     required: true,
   },
   room_id: {

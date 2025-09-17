@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Back-office.css';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { updateUser, deleteUser, createUser, checkAdminStatus } from '../../protocol/api';
+import { updateUserById, deleteUserById, createUser, checkAdminStatus } from '../../protocol/api';
 import { getAuthToken } from '../../store/user';
 import config from '../../config.json';
 const prodApiKey = (import.meta as any).env.VITE_API as string;
@@ -87,7 +87,7 @@ const BackOffice = () => {
             if (!token) {
                 throw new Error('Token not found');
             }
-            const response = await fetch(`${SERVER_URL}/user`, {
+            const response = await fetch(`${SERVER_URL}/users`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -165,10 +165,10 @@ const BackOffice = () => {
         }
     };
 
-    const updateUserMutation = useMutation({
+    const updateUserByIdMutation = useMutation({
         mutationFn: async (userData: { userId: string; username: string; mail: string; role: string }) => {
             const { userId, ...updateData } = userData;
-            return await updateUser(userId, updateData);
+            return await updateUserById(userId, updateData);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -181,9 +181,9 @@ const BackOffice = () => {
         }
     });
 
-    const deleteUserMutation = useMutation({
+    const deleteUserByIdMutation = useMutation({
         mutationFn: async (userId: string) => {
-            return await deleteUser(userId);
+            return await deleteUserById(userId);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -226,7 +226,7 @@ const BackOffice = () => {
 
     const handleEditUser = () => {
         if (selectedUser) {
-            updateUserMutation.mutate({
+            updateUserByIdMutation.mutate({
                 userId: selectedUser._id,
                 username: selectedUser.username,
                 mail: selectedUser.mail,
@@ -235,9 +235,9 @@ const BackOffice = () => {
         }
     };
 
-    const handleDeleteUser = (userId: string) => {
+    const handledeleteUserById = (userId: string) => {
         if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
-            deleteUserMutation.mutate(userId);
+            deleteUserByIdMutation.mutate(userId);
         }
     };
 
@@ -341,9 +341,9 @@ const BackOffice = () => {
                                                 <button 
                                                     className="edit-btn"
                                                     onClick={() => openEditModal(user)}
-                                                    disabled={updateUserMutation.isPending}
+                                                    disabled={updateUserByIdMutation.isPending}
                                                 >
-                                                    {updateUserMutation.isPending ? 'Modification...' : 'Modifier'}
+                                                    {updateUserByIdMutation.isPending ? 'Modification...' : 'Modifier'}
                                                 </button>
                                                 <button 
                                                     className="assign-btn"
@@ -354,10 +354,10 @@ const BackOffice = () => {
                                                 </button>
                                                 <button 
                                                     className="delete-btn"
-                                                    onClick={() => handleDeleteUser(user._id)}
-                                                    disabled={deleteUserMutation.isPending}
+                                                    onClick={() => handledeleteUserById(user._id)}
+                                                    disabled={deleteUserByIdMutation.isPending}
                                                 >
-                                                    {deleteUserMutation.isPending ? 'Suppression...' : 'Supprimer'}
+                                                    {deleteUserByIdMutation.isPending ? 'Suppression...' : 'Supprimer'}
                                                 </button>
                                             </div>
                                         </td>
@@ -476,13 +476,13 @@ const BackOffice = () => {
                         <div className="modal-actions">
                             <button 
                                 onClick={handleEditUser}
-                                disabled={updateUserMutation.isPending}
+                                disabled={updateUserByIdMutation.isPending}
                             >
-                                {updateUserMutation.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
+                                {updateUserByIdMutation.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
                             </button>
                             <button 
                                 onClick={() => setIsEditModalOpen(false)}
-                                disabled={updateUserMutation.isPending}
+                                disabled={updateUserByIdMutation.isPending}
                             >
                                 Annuler
                             </button>
