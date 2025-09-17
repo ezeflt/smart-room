@@ -13,10 +13,12 @@ import { useQuery } from '@tanstack/react-query';
 
 function App() {
     const location = useLocation();
-    const knownPaths = ['/', '/alarm', '/weather', '/office', '/login', '/admin'];
-    const isKnownPath = knownPaths.some((p) => location.pathname === p || location.pathname.startsWith(p + '/'));
-    const shouldShowHeader = isKnownPath && location.pathname !== '/login' && location.pathname !== '/';
-    const isWeather = location.pathname === '/weather' || location.pathname.startsWith('/weather/');
+
+    const isPortfolio = location.pathname === '/';
+    const isWeather = location.pathname === '/weather';
+    const isLogin = location.pathname === '/login';
+
+    const shouldShowHeader = !(isLogin || isPortfolio);
 
     const user = useSelector<State, UserState>(userSelector);
     const dispatch = useDispatch();
