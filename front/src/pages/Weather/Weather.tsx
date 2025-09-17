@@ -8,8 +8,7 @@ import Modal from '../../atoms/Modal';
 import { GlobalState, setSelectedRoom } from '../../store/global';
 import LargeScreen from '../../layouts/LargeScreen';
 import { Page } from '../../global.interface';
-import { getApiKey } from '../../utils';
-const SERVER_URL = getApiKey();
+const SERVER_URL = import.meta.env.VITE_API as string | undefined;
 
 const Weather = () => {
     const dispatch = useDispatch();
