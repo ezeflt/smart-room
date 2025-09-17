@@ -53,12 +53,12 @@ const weatherStream = (req, res) => {
             // Formatage des données pour le frontend avec datetime individuel pour chaque mesure
             const data = [{
                 sensor_id: sensorId,
-                temperature: tempData.temperature ?? null,
-                temperature_datetime: tempData.get_time.toISOString() ?? null,
-                humidity: humidityData.humidity ?? null,
-                humidity_datetime: humidityData.get_time.toISOString() ?? null,
-                pressure: pressureData.pressure ?? null,
-                pressure_datetime: pressureData.get_time.toISOString() ?? null
+                temperature: tempData?.temperature ?? null,
+                temperature_datetime: tempData?.get_time.toISOString() ?? null,
+                humidity: humidityData?.humidity ?? null,
+                humidity_datetime: humidityData?.get_time.toISOString() ?? null,
+                pressure: pressureData?.pressure ?? null,
+                pressure_datetime: pressureData?.get_time.toISOString() ?? null
             }];
             
             res.write(`data: ${JSON.stringify(data)}\n\n`);
