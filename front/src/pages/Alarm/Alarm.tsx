@@ -123,6 +123,9 @@ const Alarm = () => {
      * @returns void
      */
     const handleClickToScreen = () => {
+        if (!selectedRoom?._id) {
+            return;
+        }
         const nextEnabled = !isAlarmActivated;
         alarmMutation.mutate(nextEnabled);
     };
