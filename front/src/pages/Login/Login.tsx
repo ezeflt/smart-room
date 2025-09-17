@@ -17,25 +17,33 @@ const Login = () => {
         try {
             setError('');
 
+            // Verification si le username et le password sont remplis
             if (username === '' || password === '') {
                 setError('Please enter a username and password');
                 return;
             }
+
+            // Verification si le username est un email valide
             if (!username.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
                 setError('Please enter a valid email');
                 return;
             }
+
+            // Connexion
             const res = await login(username, password);
+
             if (res.type === 'danger') {
                 setError(res.message);
                 return;
             }
             
             // Calculer l'expiration du token basée sur expiresIn (en millisecondes)
-            const tokenExpiry = Date.now() + res.expiresIn;
+            const expiresIn24Hours = Date.now() + res.expiresIn;
+
+            console.log('expiresIn24Hours', expiresIn24Hours);
             
             dispatch(setToken(res.token));
-            dispatch(setTokenExpiry(tokenExpiry));
+            dispatch(setTokenExpiry(expiresIn24Hours));
             dispatch(setRoomsIdAccess(res.user.roomIds || []));
 
             setApiToken(res.token);

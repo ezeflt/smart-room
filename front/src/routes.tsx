@@ -3,7 +3,6 @@ import App from './App';
 import { createBrowserRouter } from 'react-router-dom';
 import Weather from './pages/Weather/Weather';
 import Alarm from './pages/Alarm/Alarm';
-import Office from './pages/Office/Office';
 import Login from './pages/Login/Login';
 import BackOffice from './pages/Back-office/Backoffice';
 import Portfolio from './pages/Portfolio/Portfolio';
@@ -15,17 +14,16 @@ const AppRoutes = createBrowserRouter([
         element: <App />,
         children: [
             {
-                index: true,
+                path: '/',
+                element: <Portfolio />,
+            },
+            {
                 path: '/alarm',
                 element: <Alarm />,
             },
             {
                 path: '/weather',
                 element: <Weather />,
-            },
-            {
-                path: '/office',
-                element: <Office />,
             },
             {
                 path: '/login',
@@ -35,10 +33,7 @@ const AppRoutes = createBrowserRouter([
                 path: '/admin',
                 element: <BackOffice />,
             },
-            {
-                path: '/',
-                element: <Portfolio />,
-            },
+
             {
                 path: '*',
                 element: <PageNotFound />,
