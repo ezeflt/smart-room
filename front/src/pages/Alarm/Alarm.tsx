@@ -24,7 +24,7 @@ const Alarm = () => {
     const navigate = useNavigate();
 
     // Room
-    const selectedRoom = global.rooms.find(room => room._id === global.selectedRoom) || global.rooms[0];
+    const selectedRoom = global.rooms.find(room => room._id === global.selectedRoom);
     const selectedRoomAlarmStatus = user.alarmStatus.find(status => status.id === selectedRoom?._id);
 
     // Alarm History
@@ -150,7 +150,7 @@ const Alarm = () => {
                 handleRoomSelect={handleRoomSelect}
             />
             
-            <div className={`alarm-history-container ${selectedRoomAlarmStatus?.status}`}>
+            <div className={`alarm-history-container ${selectedRoomAlarmStatus?.status || 'off'}`}>
                 {alarmHistory && alarmHistory.length > 0 ? (
                     alarmHistory.map((item, idx) => {
                         // Date

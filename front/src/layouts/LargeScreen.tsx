@@ -30,7 +30,7 @@ const LargeScreen = ({ page, degreeCelcius, handleClickToScreen, handleRoomSelec
         return isAlarmpage ? alarmToggleLabel : `${degreeCelcius} °C`;
     }
     const getScreenClassName = () => {
-        return `screen ${page.toLowerCase()}${alarmPageStatus ? ` ${alarmPageStatus}` : ''}`;
+        return `screen ${page.toLowerCase()}${alarmPageStatus ? ` ${alarmPageStatus}` : ' off'}`;
     }
 
     return (
