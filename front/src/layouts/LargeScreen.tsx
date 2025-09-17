@@ -1,13 +1,12 @@
 import React from 'react';
 import { LargeScreenProps, Page } from '../global.interface';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { State } from '../store/selector';
 import { UserState } from '../store/user';
 import './largeScreen.css';
 
 
 const LargeScreen = ({ page, degreeCelcius, handleClickToScreen, handleRoomSelect }: LargeScreenProps) => {
-    const dispatch = useDispatch();
     const globalState = useSelector((state: State) => state.global);
     const user = useSelector((state: State) => state.user) as UserState;
     const isAlarmpage = page === Page.Alarm;
@@ -21,7 +20,8 @@ const LargeScreen = ({ page, degreeCelcius, handleClickToScreen, handleRoomSelec
     const alarmToggleLabel = selectedRoomAlarmStatus?.status === 'on' ? 'Activé' : 'Désactivé';
     const alarmStatus = selectedRoomAlarmStatus?.status;
     const screenClassName = `screen ${page.toLowerCase()}${isAlarmpage && alarmStatus ? ` ${alarmStatus}` : ''}`;
-    const screenText = isAlarmpage ? alarmToggleLabel : `${degreeCelcius} °C`;
+    const hasDegree = typeof degreeCelcius === 'string' && degreeCelcius !== '--' && degreeCelcius.trim() !== '';
+    const screenText = isAlarmpage ? alarmToggleLabel : (hasDegree ? `${degreeCelcius} °C` : '--');
 
     return (
         <div className="large-screen-container">

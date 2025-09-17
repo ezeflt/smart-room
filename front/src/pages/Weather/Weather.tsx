@@ -1,40 +1,34 @@
 import './weather.css';
-import { useEffect, useState } from 'react';
-import { WeatherProps } from './weather.interface';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { globalSelector, State, userSelector } from '../../store/selector';
-import { UserState } from '../../store/user';
-import React from 'react';
+import { globalSelector, State } from '../../store/selector';
 import RowStatistics from './RowStatistics';
 import { useLocation } from 'react-router-dom';
 import Modal from '../../atoms/Modal';
 import { GlobalState, setSelectedRoom } from '../../store/global';
 import LargeScreen from '../../layouts/LargeScreen';
 import { Page } from '../../global.interface';
-const SERVER_URL = import.meta.env.VITE_API as string;
+const SERVER_URL = import.meta.env.VITE_API as string | undefined;
 
 const Weather = () => {
     const dispatch = useDispatch();
-    const user = useSelector<State, UserState>(userSelector);
     const global = useSelector<State, GlobalState>(globalSelector);
 
     const [lastTemperature, setLastTemperature] = useState<number | null>(null);
     const [lastHumidity, setLastHumidity] = useState<number | null>(null);
     const [lastPressure, setLastPressure] = useState<number | null>(null);
-    const [lastSensorId, setLastSensorId] = useState<string | null>(null);
-    const [weatherData, setWeatherData] = useState<WeatherProps | null>(null);
     const location = useLocation();
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMessage, setModalMessage] = useState<string | null>(null);
     const [hasShownAlert, setHasShownAlert] = useState(false);
-    const rooms = global.rooms;
     const handleRoomSelect = (roomId: string) => {
         dispatch(setSelectedRoom(roomId));
     };
 
     useEffect(() => {
-        if (location.state && location.state.alert && !hasShownAlert) {
-            setModalMessage(location.state.alert);
+        const state = location.state as { alert?: string } | null;
+        if (state?.alert && !hasShownAlert) {
+            setModalMessage(state.alert);
             setModalOpen(true);
             setHasShownAlert(true);
             window.history.replaceState({}, document.title);
@@ -42,43 +36,28 @@ const Weather = () => {
     }, [location.state, hasShownAlert]);
 
     useEffect(() => {
-        if (!global.selectedRoom) {
+        if (!global.selectedRoom || !SERVER_URL) {
             return
         };
 
         const uri = `${SERVER_URL}/weather/stream?room_id=${global.selectedRoom}`;
-        console.log('Connexion au flux météo avec URI:', uri);
         const eventSource = new EventSource(uri);
         eventSource.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            console.log('Données reçues du flux météo:', data);
-            if (data && data.length > 0) {
-                // Traitement des données pour chaque capteur
-                data.forEach((sensorData, index) => {
-                    const currentTemp = sensorData.temperature;
-                    const currentHumidity = sensorData.humidity;
-                    const currentPressure = sensorData.pressure;
-                    const currentSensorId = sensorData.sensor_id;
-                    
-                    // Mise à jour des dernières valeurs pour le premier capteur
-                    if (index === 0) {
-                        if (currentTemp !== lastTemperature) {
-                            setLastTemperature(currentTemp);
-                        }
-                        
-                        if (currentHumidity !== lastHumidity) {
-                            setLastHumidity(currentHumidity);
-                        }
-                        
-                        if (currentPressure !== lastPressure) {
-                            setLastPressure(currentPressure);
-                        }
-                        
-                        setLastSensorId(currentSensorId);
-                    }
-                });
+            try {
+                const data = JSON.parse(event.data);
+                if (Array.isArray(data) && data.length > 0) {
+                    const firstSensor = data[0];
+                    setLastTemperature(firstSensor?.temperature ?? null);
+                    setLastHumidity(firstSensor?.humidity ?? null);
+                    setLastPressure(firstSensor?.pressure ?? null);
+                }
+            } catch (_e) {
+                // Ignore malformed events
             }
-            setWeatherData(data);
+        };
+        eventSource.onerror = () => {
+            // Minimal error handling: log and let EventSource retry automatically
+            console.warn('SSE weather stream error. The browser will attempt to reconnect.');
         };
 
         return () => {
@@ -86,10 +65,12 @@ const Weather = () => {
         };
     }, [global.selectedRoom]);
 
+  const degreeText = lastTemperature == null ? '--' : String(Math.round(lastTemperature));
+
   return (
     <div className="weather-page">
         <Modal open={modalOpen} onClose={() => setModalOpen(false)} message={modalMessage || ''} />
-        <LargeScreen page={Page.Weather} degreeCelcius={lastTemperature ?? 0} handleRoomSelect={handleRoomSelect} />
+        <LargeScreen page={Page.Weather} degreeCelcius={degreeText} handleRoomSelect={handleRoomSelect} />
       <RowStatistics lastHumidity={lastHumidity} lastPressure={lastPressure} />
     </div>
   );

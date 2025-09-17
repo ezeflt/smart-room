@@ -1,0 +1,19 @@
+.status-circle {
+  display: inline-block;
+  border-radius: 50%;
+  border: 1.5px solid #e0e0e0;
+  box-shadow: 3px 3px 8px 0px rgba(44, 62, 80, 0.18);
+  box-sizing: content-box;
+  flex-shrink: 0;
+}
+
+.status-circle.success { background: #B2F2BB; }
+.status-circle.warning { background: #FFE0A3; }
+.status-circle.danger  { background: #F2B2B2; }
+
+.status-circle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+

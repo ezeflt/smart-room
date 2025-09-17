@@ -1,88 +1,126 @@
 import React from 'react';
 import StatusCircle from '../../atoms/StatusCircle';
 import './rowStatistics.css';
+import {
+  MOBILE_BREAKPOINT,
+  CIRCLE_SIZE_MOBILE,
+  CIRCLE_SIZE_DESKTOP,
+  TEXT_SIZE_MOBILE,
+  TEXT_SIZE_DESKTOP,
+  HUMIDITY_IDEAL_MIN,
+  HUMIDITY_IDEAL_MAX,
+  HUMIDITY_WARN_LOW_MIN,
+  HUMIDITY_WARN_LOW_MAX,
+  HUMIDITY_WARN_HIGH_MIN,
+  HUMIDITY_WARN_HIGH_MAX,
+  PRESSURE_IDEAL_MIN,
+  PRESSURE_IDEAL_MAX,
+  PRESSURE_WARN_LOW_MIN,
+  PRESSURE_WARN_LOW_MAX,
+  PRESSURE_WARN_HIGH_MIN,
+  PRESSURE_WARN_HIGH_MAX,
+} from './constants';
+
+type Variant = 'success' | 'warning' | 'danger';
 
 interface RowStatisticsProps {
   lastHumidity?: number | null;
   lastPressure?: number | null;
 }
 
+// Formatting helpers
+const formatPercent = (value?: number | null) =>
+  value === null || value === undefined ? '--' : `${Math.round(value)}%`;
+
+const toHpa = (value?: number | null) =>
+  value === null || value === undefined ? null : value / 100;
+
+const formatPressure = (value?: number | null) => {
+  const hpa = toHpa(value);
+  return hpa === null ? '--' : `${Math.round(hpa)} hPa`;
+};
+
+// Thresholds and variants
+const pressureVariant = (value?: number | null): Variant => {
+  const hpa = toHpa(value);
+  if (hpa === null) return 'warning';
+  if (hpa >= PRESSURE_IDEAL_MIN && hpa <= PRESSURE_IDEAL_MAX) return 'success';
+  if ((hpa >= PRESSURE_WARN_LOW_MIN && hpa <= PRESSURE_WARN_LOW_MAX) || (hpa >= PRESSURE_WARN_HIGH_MIN && hpa <= PRESSURE_WARN_HIGH_MAX)) return 'warning';
+  return 'danger';
+};
+
+const humidityVariant = (value?: number | null): Variant => {
+  if (value === null || value === undefined) return 'warning';
+  if (value >= HUMIDITY_IDEAL_MIN && value < HUMIDITY_IDEAL_MAX) return 'success';
+  if ((value >= HUMIDITY_WARN_LOW_MIN && value <= HUMIDITY_WARN_LOW_MAX) || (value >= HUMIDITY_WARN_HIGH_MIN && value <= HUMIDITY_WARN_HIGH_MAX)) return 'warning';
+  return 'danger';
+};
+
+// Responsive helper
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = React.useState(false);
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  return isMobile;
+};
+
 const RowStatistics: React.FC<RowStatisticsProps> = ({ lastHumidity, lastPressure }) => {
-  const formatPercent = (value?: number | null) =>
-    value === null || value === undefined ? '--' : `${Math.round(value)}%`;
-  const toHpa = (value?: number | null) =>
-    value === null || value === undefined ? null : value / 100;
-  const formatPressure = (value?: number | null) => {
-    const hpa = toHpa(value);
-    return hpa === null ? '--' : `${Math.round(hpa)} hPa`;
-  };
+  const isMobile = useIsMobile();
+  const circleSize = isMobile ? CIRCLE_SIZE_MOBILE : CIRCLE_SIZE_DESKTOP;
+  const textSize = isMobile ? TEXT_SIZE_MOBILE : TEXT_SIZE_DESKTOP;
 
-  const pressureVariant = (value?: number | null): 'success' | 'warning' | 'danger' => {
-    const hpa = toHpa(value);
-    if (hpa === null) return 'warning';
-    if (hpa >= 1005 && hpa <= 1025) return 'success';
-    if ((hpa >= 990 && hpa <= 1004) || (hpa >= 1026 && hpa <= 1035)) return 'warning';
-    return 'danger';
-  };
-
-  const humidityVariant = (value?: number | null): 'success' | 'warning' | 'danger' => {
-    if (value === null || value === undefined) return 'warning';
-    if (value >= 40 && value < 60) return 'success';
-    if ((value >= 30 && value < 40) || (value >= 60 && value <= 70)) return 'warning';
-    return 'danger';
-  };
-
-  const left: { variant: 'success' | 'warning' | 'danger'; text: string }[] = [
+  const left: { variant: Variant; text: string }[] = [
     { variant: humidityVariant(lastHumidity), text: `Humidité : ${formatPercent(lastHumidity)}` },
     { variant: pressureVariant(lastPressure), text: `Pression : ${formatPressure(lastPressure)}` }
   ];
-  // Légende affichée en brut (sans map)
 
-  // Responsive
-  const useIsMobile = () => {
-    const [isMobile, setIsMobile] = React.useState(false);
-    React.useEffect(() => {
-      const handleResize = () => setIsMobile(window.innerWidth < 700);
-      handleResize();
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }, []);
-    return isMobile;
-  };
-  const isMobile = useIsMobile();
-  const circleSize = isMobile ? 32 : 48;
-  const textSize = isMobile ? '1rem' : '1.25rem';
+  const humidityLegend: { variant: Variant; text: string }[] = [
+    { variant: 'success', text: '40–60%' },
+    { variant: 'warning', text: '30–39/61–70%' },
+    { variant: 'danger', text: '<30%/>70%' },
+  ];
+
+  const pressureLegend: { variant: Variant; text: string }[] = [
+    { variant: 'success', text: '1005–1025 hPa' },
+    { variant: 'warning', text: '990–1004/1026–1035 hPa' },
+    { variant: 'danger', text: '<990/>1035 hPa' },
+  ];
+
+  const meaningLegend: { variant: Variant; text: string }[] = [
+    { variant: 'success', text: ' : Valeur idéale' },
+    { variant: 'warning', text: ' : Attention, mais acceptable' },
+    { variant: 'danger', text: ' : Très mauvais' },
+  ];
 
   return (
-    <div className={`row-statistics${isMobile ? ' mobile' : ''}`}>
-      {/* Left section */}
-      <div className="row-left">
-        {left.map((item, idx) => (
-          <StatusCircle key={idx} variant={item.variant} text={item.text} size={circleSize} textSize={textSize} />
+    <div className={`row-statistics${isMobile ? ' mobile' : ''}`} role="region" aria-label="Statistiques d'humidité et de pression">
+      <div className="row-left" aria-live="polite">
+        {left.map((item) => (
+          <StatusCircle key={`${item.variant}:${item.text}`} variant={item.variant} text={item.text} size={circleSize} textSize={textSize} />
         ))}
       </div>
-      {/* Vertical separator */}
       <div className="row-separator" />
-      {/* Center section (legends) */}
       <div className="row-center">
-        <div className="row-center-row">
-          <StatusCircle variant="success" text="40–60%" size={circleSize} textSize={textSize} />
-          <StatusCircle variant="warning" text="30–39/61–70%" size={circleSize} textSize={textSize} />
-          <StatusCircle variant="danger" text="<30%/>70%" size={circleSize} textSize={textSize} />
+        <div className="row-center-row" aria-label="Légende humidité">
+          {humidityLegend.map((item) => (
+            <StatusCircle key={`hum-${item.variant}-${item.text}`} variant={item.variant} text={item.text} size={circleSize} textSize={textSize} />
+          ))}
         </div>
-        <div className="row-center-row">
-          <StatusCircle variant="success" text="1005–1025 hPa" size={circleSize} textSize={textSize} />
-          <StatusCircle variant="warning" text="990–1004/1026–1035 hPa" size={circleSize} textSize={textSize} />
-          <StatusCircle variant="danger" text="<990/>1035 hPa" size={circleSize} textSize={textSize} />
+        <div className="row-center-row" aria-label="Légende pression">
+          {pressureLegend.map((item) => (
+            <StatusCircle key={`prs-${item.variant}-${item.text}`} variant={item.variant} text={item.text} size={circleSize} textSize={textSize} />
+          ))}
         </div>
       </div>
-      {/* Vertical separator */}
       <div className="row-separator" />
-      {/* Right section */}
-      <div className="row-right">
-        <StatusCircle variant="success" text=" : Température idéale" size={circleSize} textSize={textSize} />
-        <StatusCircle variant="warning" text=" : Attention, mais acceptable" size={circleSize} textSize={textSize} />
-        <StatusCircle variant="danger" text=" : Très mauvais" size={circleSize} textSize={textSize} />
+      <div className="row-right" aria-label="Signification des couleurs">
+        {meaningLegend.map((item) => (
+          <StatusCircle key={`m-${item.variant}-${item.text}`} variant={item.variant} text={item.text} size={circleSize} textSize={textSize} />
+        ))}
       </div>
     </div>
   );
