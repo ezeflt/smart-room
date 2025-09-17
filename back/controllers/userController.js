@@ -23,24 +23,8 @@ const getUserRoomIds = async (userId) => {
     }
 };
 
-// Fonction utilitaire pour récupérer les informations complètes des rooms d'un utilisateur
-const getUserRooms = async (userId) => {
-    try {
-        // Récupérer les roomIds
-        const roomIds = await getUserRoomIds(userId);
-        
-        // Récupérer les informations complètes des rooms
-        const rooms = await Room.find({ _id: { $in: roomIds } });
-        
-        return rooms;
-    } catch (error) {
-        console.error("Erreur lors de la récupération des rooms:", error);
-        return [];
-    }
-};
-
 /**
- * Utilisateur : Client
+ * Utilisateur : Admin (back-office)
  * Description : Enregistrement d'un nouvel utilisateur
  * 
  * @returns - Utilisateur enregistré
@@ -171,29 +155,6 @@ const getUsers = async (req, res) => {
             type: "danger"
         });
     }
-}
-
-/**
- * Utilisateur : Client
- * Description : Récupération d'un utilisateur par email
- * 
- * @returns - Utilisateur
- */
-const getUserByEmail = async (req, res) => {
-    const { mail } = req.params;
-    const user = await User.findOne({ mail });
-    if (!user) {
-        return res.status(404).json({
-            message: "Utilisateur non trouvé",
-            type: "danger"
-        });
-    }
-    console.info("Utilisateur récupéré :", user);
-    res.status(200).json({
-        message: "Utilisateur récupéré avec succès",
-        type: "success",
-        user
-    });
 }
 
 /**
@@ -339,4 +300,4 @@ const getUser = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUser, getUserByEmail, updateUserById, deleteUserById, logout, getUsers, getUserRoomIds };
+module.exports = { register, login, getUser, updateUserById, deleteUserById, logout, getUsers, getUserRoomIds };
