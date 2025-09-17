@@ -24,7 +24,7 @@ const getUserRoomIds = async (userId) => {
 };
 
 /**
- * Utilisateur : Register
+ * Utilisateur : Admin (back-office)
  * Description : Enregistrement d'un nouvel utilisateur
  * 
  * @returns - Utilisateur enregistré
