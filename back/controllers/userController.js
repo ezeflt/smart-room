@@ -68,12 +68,15 @@ const register = async (req, res) => {
         });
 
         await user.save();
-        console.info("Utilisateur enregistré :", user);
+
+        const userWithoutPassword = user.toObject();
+        delete userWithoutPassword.password;
+        console.info("Utilisateur enregistré :", userWithoutPassword);
 
         res.status(201).json({
             message: "Utilisateur créé avec succès!",
             type: "success",
-            user
+            user: userWithoutPassword
         });
     } catch (err) {
         console.error("Erreur lors de l'enregistrement :", err);
