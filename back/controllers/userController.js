@@ -23,22 +23,6 @@ const getUserRoomIds = async (userId) => {
     }
 };
 
-// Fonction utilitaire pour récupérer les informations complètes des rooms d'un utilisateur
-const getUserRooms = async (userId) => {
-    try {
-        // Récupérer les roomIds
-        const roomIds = await getUserRoomIds(userId);
-        
-        // Récupérer les informations complètes des rooms
-        const rooms = await Room.find({ _id: { $in: roomIds } });
-        
-        return rooms;
-    } catch (error) {
-        console.error("Erreur lors de la récupération des rooms:", error);
-        return [];
-    }
-};
-
 /**
  * Utilisateur : Client
  * Description : Enregistrement d'un nouvel utilisateur
