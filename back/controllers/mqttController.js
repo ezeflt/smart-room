@@ -1,13 +1,11 @@
 const mqtt = require("mqtt");
 require("dotenv").config();
-const { connectdb, saveSensorStat } = require("./mqttInsertController.js");
+const { saveSensorStat } = require("../service/sensorService.js");
 const { insertSensorState } = require("./mqttAlarmController.js");
 
 const broker = "mqtt://admin-hetic.arcplex.tech:8828";
 const topic = "pws-packet/202481597308186/#";
 
-
-connectdb();
 const client = mqtt.connect(broker);
 
 client.on("connect", () => {

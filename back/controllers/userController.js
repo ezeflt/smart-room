@@ -1,9 +1,9 @@
 const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
 const UserSensor = require("../models/usersensor");
 const RoomSensor = require("../models/roomsensor");
+const Room = require("../models/room");
 
 // Fonction utilitaire pour récupérer les roomIds d'un utilisateur via les tables de liaison
 const getUserRoomIds = async (userId) => {
@@ -11,14 +11,10 @@ const getUserRoomIds = async (userId) => {
         // Récupérer les sensors de l'utilisateur
         const userSensors = await UserSensor.find({ user_id: userId }).select('sensor_id');
         const sensorIds = userSensors.map(us => us.sensor_id);
-
-        console.log("@@ @@sensorIds", sensorIds);
         
         // Récupérer les rooms associées à ces sensors
         const roomSensors = await RoomSensor.find({ sensor_id: { $in: sensorIds } }).select('room_id');
-        const roomIds = roomSensors.map(rs => rs.room_id);
-
-        console.log("@@ @@roomIds", roomIds);
+        const roomIds = roomSensors.map((roomSensor) => roomSensor.room_id);
         
         return roomIds;
     } catch (error) {
@@ -30,8 +26,6 @@ const getUserRoomIds = async (userId) => {
 // Fonction utilitaire pour récupérer les informations complètes des rooms d'un utilisateur
 const getUserRooms = async (userId) => {
     try {
-        const Room = require("../models/room");
-        
         // Récupérer les roomIds
         const roomIds = await getUserRoomIds(userId);
         
@@ -45,10 +39,14 @@ const getUserRooms = async (userId) => {
     }
 };
 
+/**
+ * Utilisateur : Client
+ * Description : Enregistrement d'un nouvel utilisateur
+ * 
+ * @returns - Utilisateur enregistré
+ */
 const register = async (req, res) => {
     const { username, mail, password, confirmPassword } = req.body;
-
-     console.log("Donnees", req.body);
 
     try {
         if (password !== confirmPassword) {
@@ -58,8 +56,9 @@ const register = async (req, res) => {
             });
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        // Hashage de mot de passe(aléatoire) avec une complexité de 10
+        const rehashCount = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, rehashCount);
 
         const user = new User({
             username,
@@ -69,7 +68,8 @@ const register = async (req, res) => {
         });
 
         await user.save();
-        console.log("Utilisateur enregistré :", user);
+        console.info("Utilisateur enregistré :", user);
+
         res.status(201).json({
             message: "Utilisateur créé avec succès!",
             type: "success",
@@ -84,6 +84,12 @@ const register = async (req, res) => {
     }
 }
 
+/**
+ * Utilisateur : Client
+ * Description : Connexion d'un utilisateur
+ * 
+ * @returns - Utilisateur connecté
+ */
 const login = async (req, res) => {
     const { mail, password } = req.body;
     try {
@@ -98,6 +104,7 @@ const login = async (req, res) => {
 
         // Vérification du mot de passe
         const validPassword = await bcrypt.compare(password, user.password);
+
         if (!validPassword) {
             return res.status(400).json({
                 message: "Email ou mot de passe incorrect",
@@ -114,13 +121,14 @@ const login = async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: '24h' }
         );
-        console.log("Token généré :", token);
+
+        const expiresIn = 24 * 60 * 60 * 1000; // 24 heures
 
         res.status(200).json({
             message: "Connexion réussie!",
             type: "success",
             token,
-            expiresIn: 24 * 60 * 60 * 1000,
+            expiresIn,
             user: {
                 id: user._id,
                 username: user.username,
@@ -137,7 +145,13 @@ const login = async (req, res) => {
     }
 }
 
-const getUser = async (req, res) => {
+/**
+ * Utilisateur : Admin (back-office)
+ * Description : Récupération de tous les utilisateurs
+ * 
+ * @returns - Utilisateurs
+ */
+const getUsers = async (req, res) => {
     try {
         
         const users = await User.find({})
@@ -146,7 +160,7 @@ const getUser = async (req, res) => {
             type: "success",
             users
         });
-        console.log("Utilisateurs récupérés :", users);
+        console.info("Utilisateurs récupérés :", users);
     } catch (err) {
         console.error("Erreur lors de la récupération des users :", err);
         res.status(500).json({
@@ -156,6 +170,12 @@ const getUser = async (req, res) => {
     }
 }
 
+/**
+ * Utilisateur : Client
+ * Description : Récupération d'un utilisateur par email
+ * 
+ * @returns - Utilisateur
+ */
 const getUserByEmail = async (req, res) => {
     const { mail } = req.params;
     const user = await User.findOne({ mail });
@@ -165,7 +185,7 @@ const getUserByEmail = async (req, res) => {
             type: "danger"
         });
     }
-    console.log("Utilisateur récupéré :", user);
+    console.info("Utilisateur récupéré :", user);
     res.status(200).json({
         message: "Utilisateur récupéré avec succès",
         type: "success",
@@ -173,32 +193,22 @@ const getUserByEmail = async (req, res) => {
     });
 }
 
-const updateUser = async (req, res) => {
+/**
+ * Utilisateur : Admin
+ * Description : Mise à jour d'un utilisateur par ID
+ * 
+ * @returns - Utilisateur mis à jour
+ */
+const updateUserById = async (req, res) => {
     const { userId } = req.params;
-    const { username, mail, password, role } = req.body;
+    const updatedUserBody = req.body;
 
     try {
-        const updateFields = {};
-
-        if (username) updateFields.username = username;
-        if (mail) updateFields.mail = mail;
-
-        if (password) {
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, salt);
-            updateFields.password = hashedPassword;
-        }
-
-        if (role) updateFields.role = role;
-
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            { $set: updateFields },
+            { $set: updatedUserBody },
             { new: true, runValidators: true }
         );
-
-        // Récupération des roomIds via les tables de liaison
-        const roomIds = await getUserRoomIds(updatedUser._id);
 
         if (!updatedUser) {
             return res.status(404).json({
@@ -206,6 +216,9 @@ const updateUser = async (req, res) => {
                 type: "danger"
             });
         }
+
+        // Récupération des roomIds via les tables de liaison
+        const roomIds = await getUserRoomIds(updatedUser._id);
 
         res.status(200).json({
             message: "Utilisateur mis à jour avec succès",
@@ -226,7 +239,13 @@ const updateUser = async (req, res) => {
     }
 };
 
-const deleteUser = async (req, res) => {
+/**
+ * Utilisateur : Admin
+ * Description : Suppression d'un utilisateur par ID
+ * 
+ * @returns - Utilisateur supprimé
+ */
+const deleteUserById = async (req, res) => {
     const { userId } = req.params;
 
     try {
@@ -258,17 +277,28 @@ const deleteUser = async (req, res) => {
 };
 
 
-// Fonction logout : côté JWT, il suffit de supprimer le token côté client
+/**
+ * Utilisateur : Client
+ * Description : Ici, on ne peut pas invalider un JWT côté serveur sans blacklist globale.
+ * Log deconnexion réussie.
+ * 
+ * @returns - Déconnexion réussie
+ */
 const logout = async (req, res) => {
-    // Ici, on ne peut pas invalider un JWT côté serveur sans blacklist globale
-    // On informe juste le client de supprimer son token
+    console.debug("Déconnexion réussie !");
     res.status(200).json({
         message: "Déconnexion réussie !",
         type: "success"
     });
 }
 
-const getMe = async (req, res) => {
+/**
+ * Utilisateur : Client
+ * Description : Récupération des informations utilisateur
+ * 
+ * @returns - Informations utilisateur
+ */
+const getUser = async (req, res) => {
     try {
         // req.user est défini par le middleware authenticateToken
         const userId = req.user.userId;
@@ -306,26 +336,4 @@ const getMe = async (req, res) => {
     }
 };
 
-// Récupérer les informations complètes des rooms d'un utilisateur
-const getUserRoomsInfo = async (req, res) => {
-    try {
-        const userId = req.params.userId || req.user.userId;
-        
-        // Récupérer les informations complètes des rooms
-        const rooms = await getUserRooms(userId);
-        
-        res.status(200).json({
-            message: "Rooms de l'utilisateur récupérées avec succès",
-            type: "success",
-            rooms: rooms
-        });
-    } catch (err) {
-        console.error("Erreur lors de la récupération des rooms de l'utilisateur :", err);
-        res.status(500).json({
-            message: "Erreur lors de la récupération des rooms de l'utilisateur",
-            type: "danger"
-        });
-    }
-};
-
-module.exports = { register, login, getUser, getUserByEmail, updateUser, deleteUser, logout, getMe, getUserRoomsInfo };
+module.exports = { register, login, getUser, getUserByEmail, updateUserById, deleteUserById, logout, getUsers, getUserRoomIds };

@@ -1,5 +1,12 @@
 require("dotenv").config();
 const nodemailer = require('nodemailer');
+const Sensor = require("../models/sensor.js");
+const SensorDetection = require("../models/sensordetection.js");
+const Alarme = require("../models/alarm.js");
+const { setLastAlarmUser } = require('./alarmUserStore');
+const RoomSensor = require("../models/roomsensor.js");
+const UserSensor = require("../models/usersensor.js");
+
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -7,20 +14,13 @@ const transporter = nodemailer.createTransport({
         pass: process.env.GMAIL_APP_PASS, // mot de passe d'application Google
     },
 });
-const Sensor = require("../models/sensor.js");
-const { connectdb } = require("./mqttInsertController.js");
-const SensorDetection = require("../models/sensordetection.js");
-const Alarme = require("../models/alarm.js"); // À créer si non existant
-const { setLastAlarmUser, getLastAlarmUser } = require('./alarmUserStore');
-const mongoURL = process.env.MONGO_URL;
-const RoomSensor = require("../models/roomsensor.js");
-const Room = require("../models/room.js");
-const UserSensor = require("../models/usersensor.js");
-const User = require("../models/user.js");
 
-connectdb();
-
-
+/**
+ * Utilisateur : MQTT
+ * Description : Insére l'état du capteur dans la base de données
+ * 
+ * @returns - État du capteur inséré avec succès
+ */
 async function insertSensorState(sensorData) {
     const state = sensorData.data.state;
     let stateValue;
@@ -100,7 +100,7 @@ async function insertSensorState(sensorData) {
                     from: process.env.GMAIL_USER,
                     to: recipientMails.join(','),
                     subject: `Alerte Sécurité : Mouvement Détecté - ${roomName}`,
-                    text: `🚨 ALERTE SÉCURITÉ 🚨\n\nCher utilisateur,\n\nNous vous informons qu'un mouvement a été détecté dans vos locaux.\n\n📅 Date et heure : ${formattedDate}\n📍 Salle : ${roomName}\nCapteur (source_address) : ${sensorData.source_address}\n\n⚠️ Veuillez prendre les mesures nécessaires et vérifier la zone concernée.\n\nCeci est un message automatique, merci de ne pas y répondre.\n\nCordialement,\nVotre système de sécurité Smart Room`
+                    text: `ALERTE SÉCURITÉ \n\nCher utilisateur,\n\nNous vous informons qu'un mouvement a été détecté dans vos locaux.\n\n Date et heure : ${formattedDate}\n Salle : ${roomName}\nCapteur (source_address) : ${sensorData.source_address}\n\n⚠️ Veuillez prendre les mesures nécessaires et vérifier la zone concernée.\n\nCeci est un message automatique, merci de ne pas y répondre.\n\nCordialement,\nVotre système de sécurité Smart Room`
                 };
 
                 transporter.sendMail(mailOptions, (error, info) => {
@@ -122,9 +122,4 @@ async function setAlarmUser(req, res) {
     res.json({ success: true });
 }
 
-
 module.exports = { insertSensorState, setAlarmUser };
-
-
-
-

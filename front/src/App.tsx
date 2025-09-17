@@ -7,7 +7,7 @@ import { State, userSelector } from './store/selector';
 import { AlarmStatusTuple, logout, setRoomsIdAccess, UserState } from './store/user';
 import { setAlarmStatus } from './store/user';
 import { setRooms, setSelectedRoom } from './store/global';
-import { getMe, getRooms } from './protocol/api';
+import { getUser, getRooms } from './protocol/api';
 import { Room } from './store/global';
 import { initAuthFromStorage } from './store/user';
 import config from './config.json';
@@ -36,7 +36,7 @@ function App() {
         if (!user.token) {
             return;
         };
-        getMe().then(res => {
+        getUser().then(res => {
             dispatch(setRoomsIdAccess(res.user.roomIds as string[]));
         });
     }, [dispatch, user.token]);

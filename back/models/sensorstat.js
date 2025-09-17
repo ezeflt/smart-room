@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-
 const sensorStatSchema = new mongoose.Schema({
   sensor_id: {
     type: Number,
@@ -22,5 +21,3 @@ const sensorStatSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model("SensorStat", sensorStatSchema);
-
-
