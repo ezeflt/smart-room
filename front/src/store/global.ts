@@ -13,7 +13,7 @@ export interface GlobalState {
 const initialState: GlobalState = {
     selectedRoom: null,
     rooms: [],
-    };
+};
 
 const globalSlice = createSlice({
     name: 'global',
@@ -24,9 +24,10 @@ const globalSlice = createSlice({
         },
         setRooms(state, action) {
             state.rooms = action.payload;
-            // Si c'est la première fois qu'on charge les rooms et qu'aucune n'est sélectionnée, sélectionner la première
-            if (state.rooms.length > 0 && !state.selectedRoom) {
-                state.selectedRoom = state.rooms[0]._id;
+            
+            // Select first room if no room is selected
+            if (action.payload.length > 0 && !state.selectedRoom) {
+                state.selectedRoom = action.payload[0]._id;
             }
         },
     },

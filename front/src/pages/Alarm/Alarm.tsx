@@ -6,140 +6,140 @@ import { globalSelector, State, userSelector } from '../../store/selector';
 import { GlobalState, setSelectedRoom } from '../../store/global';
 import { AlarmStatusTuple, UserState } from '../../store/user';
 import { setAlarmStatus } from '../../store/user';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { AlarmProps } from './alarm.interface';
 import React from 'react';
 import LargeScreen from '../../layouts/LargeScreen';
 import { Page } from '../../global.interface';
 import { useNavigate } from 'react-router-dom';
-import config from '../../config.json';
 import { getApiKey } from '../../utils';
 
 const SERVER_URL = getApiKey();
 
-// Fonction pour obtenir l'URL de l'API en fonction de l'environnement
-
 const Alarm = () => {
+    // Redux
     const dispatch = useDispatch();
     const user = useSelector<State, UserState>(userSelector);
     const global = useSelector<State, GlobalState>(globalSelector);
     const navigate = useNavigate();
 
+    // Room
     const selectedRoom = global.rooms.find(room => room._id === global.selectedRoom) || global.rooms[0];
     const selectedRoomAlarmStatus = user.alarmStatus.find(status => status.id === selectedRoom?._id);
 
+    // Alarm History
     const [alarmHistory, setAlarmHistory] = useState<AlarmProps[] | null>(null);
+
+    // Utils
     const isValidUser = user.isAuthenticated && user.token && user.tokenExpiry;
+    const isAlarmActivated = selectedRoomAlarmStatus?.status === 'on';
 
-    // PROTECT ALARM PAGE
-    useEffect(() => {
-        console.log('Alarm protection check:', { 
-            isInitialized: user.isInitialized, 
-            isAuthenticated: user.isAuthenticated, 
-            hasToken: !!user.token,
-            tokenExpiry: user.tokenExpiry 
-        });
-        
+    const protectAlarmPage = () => {
         // Attendre que l'initialisation soit terminée
-        if (!user.isInitialized) return;
-
-        // Vérification de l'authentification via l'état Redux
+        if (!user.isInitialized) {
+            return;
+        }
+        
+        // Verification de l'authentification via l'état Redux
         if (!isValidUser) {
             navigate('/login');
             return;
         }
 
-        // Vérification de l'expiration du token
+        // Verification de l'expiration du token
         if (user.tokenExpiry && Date.now() >= user.tokenExpiry) {
             navigate('/login');
             return;
         }
+    }
 
-    }, [isValidUser, user.tokenExpiry, user.isInitialized, navigate]);
+    /**
+     * Description: Récupérer l'état de l'alarme via le stream
+     * (seulement au démarrage du composant)
+     * @returns void
+     */
+    const getAlarmStatusByStream = () => {
+        if (!user.token) {
+            return
+        };
+        const eventSource = new EventSource(`${SERVER_URL}/room/status/stream?token=${user.token}`);
+        eventSource.onmessage = (event) => {
+            dispatch(setAlarmStatus({ alarmStatus: JSON.parse(event.data) as AlarmStatusTuple }));
+        };
+        return () => {
+            eventSource.close();
+        };
 
-    // GET ALARM HISTORY (STREAM)
-    useEffect(() => {
-        if (selectedRoom && user.token) {
-            if (!isValidUser) {
-                return;
-            }
-            // Utiliser l'ID de la room sélectionnée pour la requête
-            const query = selectedRoom ? `room_id=${selectedRoom._id}&token=${user.token}` : '';
-            const URI = selectedRoom ? `${SERVER_URL}/alarm/stream?${query}` : '';
+    }
 
-            const eventSource = new EventSource(URI);
-            eventSource.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                console.log('data', data);
-                setAlarmHistory(data);
-            };
-
-            return () => {
-                eventSource.close();
-            };
+    /**
+     * Description: Récupérer l'historique des alarmes via le stream
+     * @returns void
+     */
+    const getAlarmHistoryByStream = () => {
+        if (!selectedRoom?._id || !user.token) {
+            return;
         }
-    }, [selectedRoom, user.token]);
 
-    // Déplacer useMutation au niveau du composant
-    const activateAlarmMutation = useMutation({
-        mutationFn: async () => {
-            return putAlarm({ room_id: selectedRoom?._id || '', enabled: true });
+        // Utiliser l'ID de la room sélectionnée pour la requête
+        const query =`room_id=${selectedRoom._id}&token=${user.token}`;
+        const URI = `${SERVER_URL}/alarm/stream?${query}`;
+
+        const eventSource = new EventSource(URI);
+        
+        eventSource.onmessage = (event) => {
+            const alarmHistory = JSON.parse(event.data);
+            setAlarmHistory(alarmHistory);
+        };
+
+        return () => {
+            eventSource.close();
+        };
+    }
+
+    // Mutation paramétrée: on passe l'état désiré (true = activer, false = désactiver)
+    const alarmMutation = useMutation({
+        mutationFn: async (enabled: boolean) => {
+            return putAlarm({ room_id: selectedRoom?._id || '', enabled });
         },
-        onSuccess: () => {
-            // Mettre à jour le statut localement
-            dispatch(
-                setAlarmStatus({ 
-                    alarmStatus: user.alarmStatus.map(status => ({ 
-                        ...status, 
-                        status: status.id === selectedRoom?._id ? 'on' : status.status
-                    })) as AlarmStatusTuple 
-                })
+        onSuccess: (_data, enabled) => {
+            const updatedAlarmStatus = user.alarmStatus.map((status) => {
+                const newStatus = status.id === selectedRoom?._id ? (enabled ? 'on' : 'off') : status.status;
+                return { ...status, status: newStatus };
+            });
+
+            dispatch(setAlarmStatus({ alarmStatus: updatedAlarmStatus as AlarmStatusTuple }));
+        },
+        onError: (error, enabled) => {
+            console.error(
+                `Erreur lors de ${enabled ? "l'activation" : "la désactivation"} de l'alarme:`,
+                error
             );
         },
-        onError: (error) => {
-            console.error('Erreur lors de l\'activation de l\'alarme:', error);
-        }
     });
 
-    const deactivateAlarmMutation = useMutation({
-        mutationFn: async () => {
-            return putAlarm({ room_id: selectedRoom?._id || '', enabled: false });
-        },
-        onSuccess: () => {
-            // Mettre à jour le statut localement
-            dispatch(
-                setAlarmStatus({ 
-                    alarmStatus: user.alarmStatus.map(status => ({ 
-                        ...status, 
-                        status: status.id === selectedRoom?._id ? 'off' : status.status
-                    })) as AlarmStatusTuple 
-                })
-            );
-        },
-        onError: (error) => {
-            console.error('Erreur lors de la désactivation de l\'alarme:', error);
-        }
-    });
+    /**
+     * Description: Gestion du clic sur l'écran pour activer ou désactiver l'alarme
+     * @returns void
+     */
+    const handleClickToScreen = () => {
+        const nextEnabled = !isAlarmActivated;
+        alarmMutation.mutate(nextEnabled);
+    };
 
-    // Fonction pour sélectionner une room
+    /**
+     * Description: Gestion du clic sur l'écran pour activer ou désactiver l'alarme
+     * Vider l'historique lors du changement de room
+     * @returns void
+     */
     const handleRoomSelect = (roomId: string) => {
         dispatch(setSelectedRoom(roomId));
-        // Réinitialiser l'historique des alarmes lors du changement de room
         setAlarmHistory(null);
     };
 
-    // Fonction pour gérer le clic sur l'écran
-    const handleClickToScreen = () => {
-        if (selectedRoom) {
-            const currentStatus = selectedRoomAlarmStatus?.status;
-            console.log('currentStatus', currentStatus);
-            if (currentStatus === 'on') {
-                deactivateAlarmMutation.mutate();
-            } else {
-                activateAlarmMutation.mutate();
-            }
-        }
-    };
+    useEffect(() => getAlarmStatusByStream(), []);
+    useEffect(() => protectAlarmPage(), [user]);
+    useEffect(() => getAlarmHistoryByStream(), [selectedRoom, user]);
 
     return (
         <>
@@ -153,16 +153,18 @@ const Alarm = () => {
             <div className={`alarm-history-container ${selectedRoomAlarmStatus?.status}`}>
                 {alarmHistory && alarmHistory.length > 0 ? (
                     alarmHistory.map((item, idx) => {
+                        // Date
                         const date = new Date(item.timestamp);
-                        const heure = date.toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                        });
-                        const jour = date.toLocaleDateString();
+                        const hour = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const day = date.toLocaleDateString();
+
+                        // Action
                         const action = item.action === 'active' ? 'activé' : 'désactivé';
+
+                        // Return
                         return (
                             <span key={idx} className="alarm-history-item">
-                                {`${heure} ${jour} - L'alarme de la salle ${item.room} a été ${action} par ${item.userName}`}
+                                {`${hour} ${day} - L'alarme de la ${selectedRoom?.name?.toLocaleLowerCase()} a été ${action} par ${item.userName}`}
                             </span>
                         );
                     })

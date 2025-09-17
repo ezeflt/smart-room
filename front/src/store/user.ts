@@ -50,6 +50,7 @@ export const initUser = (): { token: string | null; tokenExpiry: number | null; 
 let initialToken: string | null = null;
 let initialExpiry: number | null = null;
 let initialIsAuthenticated: boolean = false;
+
 if (typeof window !== 'undefined') {
     const { token, tokenExpiry, isAuthenticated } = initUser();
     initialToken = token;
@@ -102,7 +103,7 @@ export const userSlice = createSlice({
             state.roomsIdAccess = action.payload;
             return state;
         },
-        initAuthFromStorage: (state: UserState) => {
+        initTokenFromLocalStorage: (state: UserState) => {
             const { token, tokenExpiry, isAuthenticated } = initUser();
             state.token = token;
             state.tokenExpiry = tokenExpiry;
@@ -123,7 +124,7 @@ export const userSlice = createSlice({
     },
 });
 
-export const { setEmail, setAlarmStatus, setToken, setTokenExpiry, setRoomsIdAccess, initAuthFromStorage, logout } = userSlice.actions;
+export const { setEmail, setAlarmStatus, setToken, setTokenExpiry, setRoomsIdAccess, initTokenFromLocalStorage, logout } = userSlice.actions;
 
 // Utility function to get auth token for API calls
 export const getAuthToken = (): string | null => {

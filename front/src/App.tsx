@@ -4,14 +4,12 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Header from './layouts/Header';
 import { useDispatch, useSelector } from 'react-redux';
 import { State, userSelector } from './store/selector';
-import { AlarmStatusTuple, logout, setRoomsIdAccess, UserState } from './store/user';
-import { setAlarmStatus } from './store/user';
+import { logout, setRoomsIdAccess, UserState } from './store/user';
 import { setRooms, setSelectedRoom } from './store/global';
 import { getUser, getRooms } from './protocol/api';
 import { Room } from './store/global';
-import { initAuthFromStorage } from './store/user';
-import { getApiKey } from './utils';
-const SERVER_URL = getApiKey();
+import { initTokenFromLocalStorage } from './store/user';
+import { useQuery } from '@tanstack/react-query';
 
 function App() {
     const location = useLocation();
@@ -23,76 +21,71 @@ function App() {
     const user = useSelector<State, UserState>(userSelector);
     const dispatch = useDispatch();
 
-    // Initialiser l'authentification depuis le localStorage au démarrage
-    useEffect(() => {
-        dispatch(initAuthFromStorage());
-    }, [dispatch]);
+    const { data: userData } = useQuery({
+        queryKey: ['user'],
+        queryFn: () => getUser(),
+        enabled: !!user.token,
+    });
 
-    // Récupérer les rooms de l'utilisateur
-    useEffect(() => {
-        if (!user.token) {
-            return;
-        };
-        getUser().then(res => {
-            dispatch(setRoomsIdAccess(res.user.roomIds as string[]));
-        });
-    }, [dispatch, user.token]);
+    const { data: roomsData } = useQuery({
+        queryKey: ['rooms'],
+        queryFn: () => getRooms(),
+        enabled: !!user.token,
+    });
 
-    useEffect(() => {
-        getRooms()
-            .then(res => {
-                const orderedRooms = (res.rooms || []).sort((a: Room, b: Room) => a.name.localeCompare(b.name));
-                dispatch(setRooms(orderedRooms));
-                if (orderedRooms.length > 0) {
-                    dispatch(setSelectedRoom(orderedRooms[0]._id));
-                }
-            })
-            .catch(() => {
-                dispatch(setRooms([]));
-            });
-    }, [dispatch]);
-
-    useEffect(() => {
-        if (!user.token) {
-            return
-        };
-        const eventSource = new EventSource(`${SERVER_URL}/room/status/stream?token=${user.token}`);
-        eventSource.onmessage = (event) => {
-            console.log('event.data', JSON.parse(event.data));
-            dispatch(setAlarmStatus({ alarmStatus: JSON.parse(event.data) as AlarmStatusTuple }));
-        };
-        return () => {
-            eventSource.close();
-        };
-    }, [dispatch, user.token]);
-
-    useEffect(() => {
-        if (!user.token || !user.tokenExpiry) return;
-
+    const autoLogout = () => {
         const now = Date.now();
+
+        if (!user.token || !user.tokenExpiry) {
+            return;
+        }
+
         if (now >= user.tokenExpiry) {
             dispatch(logout());
             return;
         }
+    };
 
-        const msUntilExpiry = user.tokenExpiry - now;
-        const timer = setTimeout(() => {
-            dispatch(logout());
-        }, msUntilExpiry);
-
-        return () => clearTimeout(timer);
-    }, [user.token, user.tokenExpiry, dispatch]);
-
+    /**
+     * 1. Initialiser l'authentification depuis le localStorage au démarrage
+     * 2. Logout si le token est expiré
+     * 
+     * @returns void
+     */
     useEffect(() => {
-        if (!user.email) return;
-        console.log(user.email);
-        fetch(`${SERVER_URL}/user/${user.email}`, {
-            method: 'GET',
-        }).then(res => res.json()).then(data => {
-            console.log(data);
-            dispatch(setRoomsIdAccess(data.user.rooms as string[]));
-        });
-    }, [user.email, dispatch]);
+        dispatch(initTokenFromLocalStorage());
+        autoLogout();
+    }, [dispatch]);
+
+    /**
+     * 1. Récupérer les rooms de l'utilisateur
+     * 2. Sélectionner la première room par défaut
+     * 
+     * @returns void
+     */
+    useEffect(() => {
+        if (userData) {
+            dispatch(setRoomsIdAccess(userData.user.roomIds as string[]));
+        }
+        if (userData && userData.user.roomIds.length > 0) {
+            dispatch(setSelectedRoom(userData.user.roomIds?.[0]._id));
+        }
+    }, [userData]);
+
+    /**
+     * 1. Récupérer les rooms de l'application
+     * 2. Trier les rooms par id
+     * 
+     * @returns void
+     */
+    useEffect(() => {
+        if (!roomsData?.rooms) {
+            return;
+        }
+
+        const orderedRooms = roomsData.rooms.sort((a: Room, b: Room) => a._id.localeCompare(b._id));
+        dispatch(setRooms(orderedRooms));
+    }, [roomsData]);
     
     return (
         <div className="app">
