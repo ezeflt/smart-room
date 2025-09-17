@@ -80,6 +80,29 @@ const weatherStream = (req, res) => {
 
 // Endpoint SSE pour les données d'alarme en temps réel
 const alarmStream = async (req, res) => {
+    const room_id = req.query.room_id;
+
+    if (!room_id) {
+        res.status(400).json({ error: "Room ID is required" });
+        return;
+    }
+
+    const user =  await User.findOne({ mail: req.user.mail });
+
+    if (!user) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+    }
+
+    // Vérifier l'accès à la room via les tables de liaison
+    const hasAccess = await checkRoomAccess(user._id, room_id);
+
+    if (!hasAccess) {
+        res.status(403).json({ error: "Access denied" });
+        return;
+    }
+
+    // Démarre le flux SSE uniquement après validation
     res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
@@ -87,24 +110,6 @@ const alarmStream = async (req, res) => {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Cache-Control'
     });
-
-    const room_id = req.query.room_id;
-    const user =  await User.findOne({ mail: req.user.mail });
-    
-    if (!room_id) {
-        res.write(`event: error\ndata: ${JSON.stringify({ error: "Room ID is required" })}\n\n`);
-        res.end();
-        return;
-    }
-
-    // Vérifier l'accès à la room via les tables de liaison
-    const hasAccess = await checkRoomAccess(user ? user._id : null, room_id);
-
-    if (!hasAccess) {
-        res.write(`data: ${JSON.stringify({ status: "off", error: "Access denied" })}\n\n`);
-        res.end();
-        return;
-    }
 
     // Envoi initial des données
     const sendData = async () => {
