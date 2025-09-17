@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { register ,getUsers,login, deleteUserById, updateUserById, logout, getUserByEmail, getUser  } = require("../controllers/userController.js");
+const { register ,getUsers,login, deleteUserById, updateUserById, logout, getUser  } = require("../controllers/userController.js");
 const { getRooms, getUserRooms, assignUserRooms } = require("../controllers/roomController.js");
 const { authenticateToken, authenticateStreamToken } = require("../middleware/auth.js");
 const { activate, deactivate } = require("../controllers/alarmController.js");
@@ -14,7 +14,6 @@ router.post("/logout", logout);
 // CRUD - User
 router.get("/users", getUsers);
 router.get("/user", authenticateToken, getUser);
-router.get("/user/:mail",authenticateToken, getUserByEmail);
 router.put('/user/:userId', authenticateToken, updateUserById);
 router.delete('/user/:userId', authenticateToken, deleteUserById);
 

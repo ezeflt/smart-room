@@ -155,29 +155,6 @@ const getUsers = async (req, res) => {
 }
 
 /**
- * Utilisateur : Client
- * Description : Récupération d'un utilisateur par email
- * 
- * @returns - Utilisateur
- */
-const getUserByEmail = async (req, res) => {
-    const { mail } = req.params;
-    const user = await User.findOne({ mail });
-    if (!user) {
-        return res.status(404).json({
-            message: "Utilisateur non trouvé",
-            type: "danger"
-        });
-    }
-    console.info("Utilisateur récupéré :", user);
-    res.status(200).json({
-        message: "Utilisateur récupéré avec succès",
-        type: "success",
-        user
-    });
-}
-
-/**
  * Utilisateur : Admin
  * Description : Mise à jour d'un utilisateur par ID
  * 
@@ -320,4 +297,4 @@ const getUser = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getUser, getUserByEmail, updateUserById, deleteUserById, logout, getUsers, getUserRoomIds };
+module.exports = { register, login, getUser, updateUserById, deleteUserById, logout, getUsers, getUserRoomIds };
