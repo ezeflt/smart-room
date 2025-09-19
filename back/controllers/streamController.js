@@ -115,8 +115,6 @@ const alarmStream = async (req, res) => {
         try {
             const alarmData = await historic(room_id);
 
-            console.log('alarmData', alarmData);
-
             res.write(`data: ${JSON.stringify(alarmData)}\n\n`);
         } catch (error) {
             console.error('Erreur lors de l\'envoi des données SSE alarme:', error);
