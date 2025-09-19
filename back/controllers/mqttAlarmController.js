@@ -1,72 +1,53 @@
 require("dotenv").config();
 const nodemailer = require('nodemailer');
-const Sensor = require("../models/sensor.js");
-const SensorDetection = require("../models/sensordetection.js");
-const Alarme = require("../models/alarm.js");
-const { setLastAlarmUser } = require('./alarmUserStore');
-const RoomSensor = require("../models/roomsensor.js");
-const UserSensor = require("../models/usersensor.js");
-
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASS, // mot de passe d'application Google (NE PAS LOGGER)
+        pass: process.env.GMAIL_APP_PASS, // mot de passe d'application Google
     },
 });
 const Sensor = require("../models/sensor.js");
 const { connectdb } = require("./mqttInsertController.js");
 const SensorDetection = require("../models/sensordetection.js");
-const Alarme = require("../models/alarm.js"); // À créer si non existant
-const { setLastAlarmUser, getLastAlarmUser } = require('./alarmUserStore');
+const Alarme = require("../models/alarm.js"); 
+const { setLastAlarmUser } = require('./alarmUserStore');
 const mongoURL = process.env.MONGO_URL;
 const RoomSensor = require("../models/roomsensor.js");
 const Room = require("../models/room.js");
 const UserSensor = require("../models/usersensor.js");
 const User = require("../models/user.js");
 
-// utilitaires de log avec timestamp
-const log = (...args) => console.log(new Date().toISOString(), '[INFO]', ...args);
-const errorLog = (...args) => console.error(new Date().toISOString(), '[ERROR]', ...args);
+console.log('[INIT] Fichier sensor controller chargé.');
+console.log('[INIT] Présence de MONGO_URL :', !!mongoURL);
 
-log('Fichier sensor controller chargé.');
-log('Présence de MONGO_URL :', !!mongoURL);
-
-// Connexion DB : gère sync/async selon l'implémentation de connectdb
 try {
-    log('Tentative d\'appel de connectdb()...');
+    console.log('[DB] Tentative d\'appel de connectdb()...');
     const maybePromise = connectdb();
     if (maybePromise && typeof maybePromise.then === 'function') {
-        log('connectdb() a retourné une promesse — on surveille sa résolution.');
+        console.log('[DB] connectdb() retourne une promesse...');
         maybePromise
-            .then(() => log('connectdb() résolue : connexion DB établie.'))
-            .catch(err => errorLog('connectdb() rejetée :', err));
+            .then(() => console.log('[DB] Connexion DB établie.'))
+            .catch(err => console.error('[DB] Erreur de connexion :', err));
     } else {
-        log('connectdb() exécutée (retour non-promesse présumé).');
+        console.log('[DB] connectdb() exécutée (non promesse).');
     }
 } catch (err) {
-    errorLog('connectdb() a throw une erreur synchronisée :', err);
+    console.error('[DB] Erreur synchronisée lors de connectdb() :', err);
 }
 
-/**
- * Insert state flow:
- * - log entrée
- * - map state -> stateValue/actionValue
- * - check room association et alarme active
- * - create Sensor
- * - create SensorDetection
- * - si trigger -> récupérer users, formatter date, préparer mail, envoyer mail
- */
 async function insertSensorState(sensorData) {
-    log('insertSensorState appelé.');
+    console.log('[FUNC] insertSensorState appelé.');
+
     try {
         if (!sensorData) {
-            errorLog('insertSensorState: sensorData manquant!');
+            console.error('[ERROR] sensorData manquant !');
             return;
         }
+
         const source = sensorData.source_address;
         const incomingState = sensorData.data && sensorData.data.state;
-        log('Données reçues:', { source, incomingState });
+        console.log('[DATA] Données reçues:', { source, incomingState });
 
         let stateValue;
         let actionValue;
@@ -78,143 +59,112 @@ async function insertSensorState(sensorData) {
             stateValue = 1;
             actionValue = 'trigger';
         } else {
-            log("État du capteur non reconnu :", incomingState, "pour source :", source);
+            console.log('[WARN] État du capteur non reconnu :', incomingState, 'pour', source);
             return;
         }
-        log(`État mappé -> stateValue: ${stateValue}, actionValue: ${actionValue}`);
 
-        // Vérifier l'état de l'alarme pour la salle du capteur
-        log(`Recherche de RoomSensor pour sensor_id=${source}...`);
+        console.log(`[STATE] Mappé -> stateValue=${stateValue}, actionValue=${actionValue}`);
+
+        // Vérifier l'état de l'alarme
+        console.log(`[CHECK] Recherche RoomSensor pour sensor_id=${source}...`);
         const roomSensorForCheck = await RoomSensor.findOne({ sensor_id: source });
-        log('Résultat RoomSensor.findOne:', roomSensorForCheck ? `trouvé (room_id=${roomSensorForCheck.room_id})` : 'aucun lien trouvé');
+        console.log('[CHECK] Résultat RoomSensor:', roomSensorForCheck ? `room_id=${roomSensorForCheck.room_id}` : 'aucun trouvé');
 
         const roomIdForCheck = roomSensorForCheck ? roomSensorForCheck.room_id : null;
         if (!roomIdForCheck) {
-            log(`Insertion bloquée : impossible d'identifier la salle pour le capteur ${source}.`);
+            console.log(`[BLOCK] Impossible d'identifier la salle pour le capteur ${source}.`);
             return;
         }
 
-        log(`Recherche de la dernière alarme pour room_id=${roomIdForCheck}...`);
+        console.log(`[CHECK] Recherche dernière alarme pour room_id=${roomIdForCheck}...`);
         const lastRoomAlarm = await Alarme.findOne({ room_id: roomIdForCheck }).sort({ timestamp: -1 });
-        log('Résultat Alarme.findOne (dernière):', lastRoomAlarm ? `trouvée (action=${lastRoomAlarm.action})` : 'aucune alarme trouvée');
+        console.log('[CHECK] Dernière alarme :', lastRoomAlarm ? `action=${lastRoomAlarm.action}` : 'aucune trouvée');
 
         if (!lastRoomAlarm || lastRoomAlarm.action !== 'active') {
-            log(`Insertion bloquée : l'alarme de la salle (${roomIdForCheck}) est désactivée ou absente.`);
+            console.log(`[BLOCK] Alarme désactivée pour la salle ${roomIdForCheck}.`);
             return;
         }
 
-        // Création d'une entrée Sensor
-        log('Création d\'un document Sensor avec:', { sensor_id: source, state: stateValue });
+        // Création Sensor
+        console.log('[INSERT] Création Sensor:', { sensor_id: source, state: stateValue });
         const sensor = await Sensor.create({
             sensor_id: source,
             state: stateValue
         });
-        log(`État du capteur ${source} inséré dans Sensor : _id=${sensor._id || sensor.id || 'n/a'}`);
+        console.log(`[OK] Sensor inséré _id=${sensor._id || 'n/a'}`);
 
-        // Création d'une entrée SensorDetection
-        const detectionPayload = {
-            sensor_id: sensor.sensor_id,
-            action: actionValue
-            // ajouter d'autres champs si nécessaire
-        };
-        log('Création d\'un document SensorDetection avec:', detectionPayload);
+        // Création SensorDetection
+        const detectionPayload = { sensor_id: sensor.sensor_id, action: actionValue };
+        console.log('[INSERT] Création SensorDetection:', detectionPayload);
         const detection = await SensorDetection.create(detectionPayload);
-        log(`Détection insérée dans SensorDetection : _id=${detection._id || detection.id || 'n/a'}`, detectionPayload);
+        console.log(`[OK] SensorDetection inséré _id=${detection._id || 'n/a'}`);
 
         // Envoi d'email si trigger
         if (actionValue === 'trigger') {
-            log(`Action 'trigger' détectée pour ${source} — récupération des utilisateurs liés...`);
+            console.log(`[ALERT] Trigger détecté pour capteur ${source} -> recherche utilisateurs...`);
             const userSensorLinks = await UserSensor.find({ sensor_id: source }).populate('user_id');
-            log('Nombre de liens user-sensor trouvés :', (userSensorLinks && userSensorLinks.length) || 0);
+            console.log('[ALERT] Nombre d\'utilisateurs liés:', userSensorLinks.length);
 
             const recipientMails = userSensorLinks
                 .map(link => link?.user_id?.mail)
                 .filter(Boolean);
 
-            log('Emails destinataires extraits :', recipientMails);
+            console.log('[ALERT] Emails destinataires:', recipientMails);
 
             if (!recipientMails || recipientMails.length === 0) {
-                log(`Aucun utilisateur associé au capteur ${source} pour recevoir l'alerte.`);
+                console.log(`[INFO] Aucun utilisateur pour le capteur ${source}.`);
             } else {
-                // Formatage personnalisé de la date
                 let formattedDate = '';
                 if (detection.time_detection) {
-                    try {
-                        const d = new Date(detection.time_detection);
-                        formattedDate = d.toLocaleString('fr-FR', {
-                            timeZone: 'Europe/Paris',
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                            hour12: false
-                        }).replace(',', '');
-                    } catch (dateErr) {
-                        errorLog('Erreur lors du formatage de detection.time_detection :', dateErr);
-                    }
+                    formattedDate = new Date(detection.time_detection).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' });
                 } else {
-                    log('detection.time_detection absent, utilisation de la date actuelle.');
                     formattedDate = new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' });
                 }
 
-                // Trouver la salle associée à ce capteur (détails)
-                log(`Recherche RoomSensor (populate room_id) pour sensor_id=${source}...`);
+                console.log(`[ALERT] Date formatée pour mail: ${formattedDate}`);
+
                 const roomSensor = await RoomSensor.findOne({ sensor_id: source }).populate('room_id');
-                const roomName = (roomSensor && roomSensor.room_id && roomSensor.room_id.name) ? roomSensor.room_id.name : 'inconnue';
-                log('Salle associée trouvée :', roomName);
+                const roomName = roomSensor?.room_id?.name || 'inconnue';
+                console.log('[ALERT] Salle associée:', roomName);
 
                 const mailOptions = {
                     from: process.env.GMAIL_USER,
                     to: recipientMails.join(','),
                     subject: `Alerte Sécurité : Mouvement Détecté - ${roomName}`,
-                    text: `🚨 ALERTE SÉCURITÉ 🚨\n\nCher utilisateur,\n\nNous vous informons qu'un mouvement a été détecté dans vos locaux.\n\n📅 Date et heure : ${formattedDate}\n📍 Salle : ${roomName}\nCapteur (source_address) : ${source}\n\n⚠️ Veuillez prendre les mesures nécessaires et vérifier la zone concernée.\n\nCeci est un message automatique, merci de ne pas y répondre.\n\nCordialement,\nVotre système de sécurité Smart Room`
+                    text: `🚨 Mouvement détecté\n\n📅 ${formattedDate}\n📍 Salle : ${roomName}\nCapteur : ${source}`
                 };
 
-                log('Préparation à l\'envoi d\'email. Résumé mailOptions:', {
-                    from: mailOptions.from,
-                    toCount: recipientMails.length,
-                    subject: mailOptions.subject,
-                    // ne pas logger le corps complet si tu veux éviter trop de texte
+                console.log('[MAIL] Préparation envoi mail à', recipientMails.length, 'destinataires...');
+                transporter.sendMail(mailOptions, (error, info) => {
+                    if (error) {
+                        console.error('[MAIL] Erreur envoi Gmail :', error);
+                    } else {
+                        console.log('[MAIL] Email envoyé avec succès:', info.response);
+                    }
                 });
-
-                try {
-                    transporter.sendMail(mailOptions, (error, info) => {
-                        if (error) {
-                            errorLog('Erreur lors de l\'envoi de l\'email via Gmail :', error);
-                        } else {
-                            log(`Email d'alerte envoyé à ${recipientMails.length} destinataire(s). Response:`, info && info.response);
-                        }
-                    });
-                } catch (sendErr) {
-                    errorLog('sendMail a throw une erreur :', sendErr);
-                }
             }
         } else {
-            log(`Action '${actionValue}' ne déclenche pas d'email. Fin du traitement pour ${source}.`);
+            console.log(`[INFO] Action '${actionValue}' ne déclenche pas d'email.`);
         }
 
-        log('insertSensorState terminé sans erreur pour source:', source);
+        console.log('[FUNC] insertSensorState terminé pour', source);
     } catch (err) {
-        errorLog("Erreur lors de la mise à jour de l'état du capteur ou de la détection :", err);
+        console.error('[ERROR] Problème dans insertSensorState:', err);
         try {
-            errorLog('Données ayant causé l\'erreur :', JSON.stringify(sensorData));
-        } catch (jsonErr) {
-            errorLog('Impossible de stringify sensorData pour le log :', jsonErr);
-        }
+            console.error('[ERROR] Données brutes:', JSON.stringify(sensorData));
+        } catch {}
     }
 }
 
 async function setAlarmUser(req, res) {
     try {
-        log('setAlarmUser appelé. Utilisateur en session :', req && req.user ? req.user : 'aucun user dans req');
+        console.log('[FUNC] setAlarmUser appelé. Utilisateur:', req?.user);
         setLastAlarmUser(req.user);
-        log('Utilisateur enregistré pour l\'alerte :', req.user && req.user._id ? `id=${req.user._id}` : req.user);
+        console.log('[OK] Utilisateur enregistré:', req.user?._id || req.user);
         res.json({ success: true });
     } catch (err) {
-        errorLog('Erreur dans setAlarmUser :', err);
-        res.status(500).json({ success: false, error: 'Erreur serveur lors de l\'enregistrement de l\'utilisateur' });
+        console.error('[ERROR] setAlarmUser:', err);
+        res.status(500).json({ success: false, error: 'Erreur serveur' });
     }
 }
 
