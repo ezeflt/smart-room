@@ -22,13 +22,6 @@ services:
       - ./back:/app
       - /app/node_modules
     command: npm run dev
-  mqtt:
-    image: eclipse-mosquitto:2.0
-    ports:
-      - "1883:1883"
-      - "9001:9001"
-    volumes:
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
 
 #pour lancer le container : docker compose up --build
 #pour stopper le container : docker compose down
