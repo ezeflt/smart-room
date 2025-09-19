@@ -8,7 +8,6 @@ const transporter = nodemailer.createTransport({
     },
 });
 const Sensor = require("../models/sensor.js");
-const { connectdb } = require("./mqttInsertController.js");
 const SensorDetection = require("../models/sensordetection.js");
 const Alarme = require("../models/alarm.js"); 
 const { setLastAlarmUser } = require('./alarmUserStore');
