@@ -50,7 +50,7 @@ function App() {
 
     /**
      * 1. Initialiser l'authentification depuis le localStorage au démarrage
-     * 2. Logout si le token est expiré
+     * 2. Logout si le token est expiré 
      * 
      * @returns void
      */
