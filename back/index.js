@@ -5,6 +5,7 @@ const connectDB = require("./database/database.js");
 const routes = require('./routes/routes.js');
 const http = require('http');
 const server = http.createServer(app);
+const mqtt = require('./controllers/mqttController.js');
 
 // Variables d'environnement
 require("dotenv").config();
@@ -18,7 +19,6 @@ app.use(cors({ origin: process.env.DNS_CLIENT }));
 // Middlewares - Parse du contenu json
 app.use(express.json());
 
-
 // Middlewares - Routes
 app.use('/', routes);
 
@@ -26,3 +26,6 @@ app.use('/', routes);
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+// Initialisation du client MQTT
+mqtt.init();
