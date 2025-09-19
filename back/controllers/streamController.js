@@ -2,19 +2,24 @@ const SensorStat = require("../models/sensorstat.js");
 const { historic } = require("./alarmController.js");
 const { getRoomsStatus } = require("../controllers/roomController.js");
 const User = require("../models/user.js");
-const UserSensor = require("../models/usersensor.js");
 const RoomSensor = require("../models/roomsensor.js");
 const { checkRoomAccess } = require("../service/userService.js");
 
+const streamHeadersOptions = {
+    // Content-Type - Permet de définir le type de contenu et de définir le format des données
+    'Content-Type': 'text/event-stream',
+    // Cache-Control - Permet de désactiver le cache du navigateur
+    'Cache-Control': 'no-cache',
+    // Keep-alive - Permet de maintenir la connexion ouverte
+    'Connection': 'keep-alive',
+
+    // Headers CORS - Permet de définir les origines autorisées pour les requêtes CORS
+    'Access-Control-Allow-Origin': process.env.DNS_CLIENT,
+};
+
 // Endpoint SSE pour les données météo en temps réel
 const weatherStream = (req, res) => {
-    res.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Cache-Control'
-    });
+    res.writeHead(200, streamHeadersOptions);
 
     const room_id = req.query.room_id;
 
@@ -103,13 +108,7 @@ const alarmStream = async (req, res) => {
     }
 
     // Démarre le flux SSE uniquement après validation
-    res.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Cache-Control'
-    });
+    res.writeHead(200, streamHeadersOptions);
 
     // Envoi initial des données
     const sendData = async () => {
@@ -137,13 +136,7 @@ const alarmStream = async (req, res) => {
 
 // Endpoint SSE pour le statut des alarmes par salle
 const roomStatusStream = (req, res) => {
-    res.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Cache-Control'
-    });
+    res.writeHead(200, streamHeadersOptions);
 
     // Envoi initial des données
     const sendData = async () => {

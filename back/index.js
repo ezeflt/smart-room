@@ -13,7 +13,7 @@ const PORT = process.env.PORT;
 connectDB();
 
 // Middlewares - Validation des requête du domaine front
-app.use(cors());
+app.use(cors({ origin: process.env.DNS_CLIENT }));
 
 // Middlewares - Parse du contenu json
 app.use(express.json());
