@@ -66,10 +66,10 @@ function App() {
      * @returns void
      */
     useEffect(() => {
-        if (userData && userData.user.roomIds) {
+        if (userData && userData.user && userData.user.roomIds) {
             dispatch(setRoomsIdAccess(userData.user.roomIds as string[]));
         }
-        if (userData && userData.user.roomIds && userData.user.roomIds.length > 0) {
+        if (userData && userData.user && userData.user.roomIds && userData.user.roomIds.length > 0) {
             dispatch(setSelectedRoom(userData.user.roomIds[0]._id));
         }
     }, [userData]);
