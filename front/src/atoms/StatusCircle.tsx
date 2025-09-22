@@ -1,4 +1,5 @@
 import React from 'react';
+import './StatusCircle.css';
 
 interface StatusCircleProps {
   variant: 'success' | 'warning' | 'danger';
@@ -7,32 +8,11 @@ interface StatusCircleProps {
   textSize?: string;
 }
 
-const variantColors = {
-  success: '#B2F2BB',
-  warning: '#FFE0A3',
-  danger: '#F2B2B2',
-};
-
 const StatusCircle: React.FC<StatusCircleProps> = ({ variant, text, size = 32, textSize = '1rem' }) => {
-  const circleColor = variantColors[variant];
-
+  const diameterStyle = { width: size, height: size, minWidth: size, minHeight: size } as React.CSSProperties;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-      <span
-        style={{
-          display: 'inline-block',
-          width: size,
-          height: size,
-          minWidth: size,
-          minHeight: size,
-          borderRadius: '50%',
-          background: circleColor,
-          border: '1.5px solid #e0e0e0',
-          boxShadow: '3px 3px 8px 0px rgba(44, 62, 80, 0.18)',
-          boxSizing: 'content-box',
-          flexShrink: 0,
-        }}
-      />
+    <div className="status-circle-row">
+      <span aria-hidden="true" className={`status-circle ${variant}`} style={diameterStyle} />
       <span style={{ fontSize: textSize }}>{text}</span>
     </div>
   );
