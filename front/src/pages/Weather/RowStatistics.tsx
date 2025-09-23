@@ -79,15 +79,15 @@ const RowStatistics: React.FC<RowStatisticsProps> = ({ lastHumidity, lastPressur
   ];
 
   const humidityLegend: { variant: Variant; text: string }[] = [
-    { variant: 'success', text: '40–60%' },
-    { variant: 'warning', text: '30–39/61–70%' },
-    { variant: 'danger', text: '<30%/>70%' },
+    { variant: 'success', text: `${HUMIDITY_IDEAL_MIN}–${HUMIDITY_IDEAL_MAX}%` },
+    { variant: 'warning', text: `${HUMIDITY_WARN_LOW_MIN}–${HUMIDITY_WARN_LOW_MAX}/${HUMIDITY_WARN_HIGH_MIN}–${HUMIDITY_WARN_HIGH_MAX}%` },
+    { variant: 'danger', text: `<${HUMIDITY_WARN_LOW_MIN}%/>${HUMIDITY_WARN_HIGH_MAX}%` },
   ];
 
   const pressureLegend: { variant: Variant; text: string }[] = [
-    { variant: 'success', text: '1005–1025 hPa' },
-    { variant: 'warning', text: '990–1004/1026–1035 hPa' },
-    { variant: 'danger', text: '<990/>1035 hPa' },
+    { variant: 'success', text: `${PRESSURE_IDEAL_MIN}–${PRESSURE_IDEAL_MAX} hPa` },
+    { variant: 'warning', text: `${PRESSURE_WARN_LOW_MIN}–${PRESSURE_WARN_LOW_MAX}/${PRESSURE_WARN_HIGH_MIN}–${PRESSURE_WARN_HIGH_MAX} hPa` },
+    { variant: 'danger', text: `<${PRESSURE_WARN_LOW_MIN}/>${PRESSURE_WARN_HIGH_MAX} hPa` },
   ];
 
   const meaningLegend: { variant: Variant; text: string }[] = [
@@ -97,27 +97,27 @@ const RowStatistics: React.FC<RowStatisticsProps> = ({ lastHumidity, lastPressur
   ];
 
   return (
-    <div className={`row-statistics${isMobile ? ' mobile' : ''}`} role="region" aria-label="Statistiques d'humidité et de pression">
-      <div className="row-left" aria-live="polite">
+    <div className={`row-statistics${isMobile ? ' mobile' : ''}`}>
+      <div className="row-left">
         {left.map((item) => (
           <StatusCircle key={`${item.variant}:${item.text}`} variant={item.variant} text={item.text} size={circleSize} textSize={textSize} />
         ))}
       </div>
       <div className="row-separator" />
       <div className="row-center">
-        <div className="row-center-row" aria-label="Légende humidité">
+        <div className="row-center-row">
           {humidityLegend.map((item) => (
             <StatusCircle key={`hum-${item.variant}-${item.text}`} variant={item.variant} text={item.text} size={circleSize} textSize={textSize} />
           ))}
         </div>
-        <div className="row-center-row" aria-label="Légende pression">
+        <div className="row-center-row">
           {pressureLegend.map((item) => (
             <StatusCircle key={`prs-${item.variant}-${item.text}`} variant={item.variant} text={item.text} size={circleSize} textSize={textSize} />
           ))}
         </div>
       </div>
       <div className="row-separator" />
-      <div className="row-right" aria-label="Signification des couleurs">
+      <div className="row-right">
         {meaningLegend.map((item) => (
           <StatusCircle key={`m-${item.variant}-${item.text}`} variant={item.variant} text={item.text} size={circleSize} textSize={textSize} />
         ))}
