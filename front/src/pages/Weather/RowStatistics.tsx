@@ -79,14 +79,14 @@ const RowStatistics: React.FC<RowStatisticsProps> = ({ lastHumidity, lastPressur
   ];
 
   const humidityLegend: { variant: Variant; text: string }[] = [
-    { variant: 'success', text: `${HUMIDITY_IDEAL_MIN}–${HUMIDITY_IDEAL_MAX}%` },
-    { variant: 'warning', text: `${HUMIDITY_WARN_LOW_MIN}–${HUMIDITY_WARN_LOW_MAX}/${HUMIDITY_WARN_HIGH_MIN}–${HUMIDITY_WARN_HIGH_MAX}%` },
+    { variant: 'success', text: `${HUMIDITY_IDEAL_MIN}-${HUMIDITY_IDEAL_MAX}%` },
+    { variant: 'warning', text: `${HUMIDITY_WARN_LOW_MIN}-${HUMIDITY_WARN_LOW_MAX}/${HUMIDITY_WARN_HIGH_MIN}-${HUMIDITY_WARN_HIGH_MAX}%` },
     { variant: 'danger', text: `<${HUMIDITY_WARN_LOW_MIN}%/>${HUMIDITY_WARN_HIGH_MAX}%` },
   ];
 
   const pressureLegend: { variant: Variant; text: string }[] = [
-    { variant: 'success', text: `${PRESSURE_IDEAL_MIN}–${PRESSURE_IDEAL_MAX} hPa` },
-    { variant: 'warning', text: `${PRESSURE_WARN_LOW_MIN}–${PRESSURE_WARN_LOW_MAX}/${PRESSURE_WARN_HIGH_MIN}–${PRESSURE_WARN_HIGH_MAX} hPa` },
+    { variant: 'success', text: `${PRESSURE_IDEAL_MIN}-${PRESSURE_IDEAL_MAX} hPa` },
+    { variant: 'warning', text: `${PRESSURE_WARN_LOW_MIN}-${PRESSURE_WARN_LOW_MAX}/${PRESSURE_WARN_HIGH_MIN}-${PRESSURE_WARN_HIGH_MAX} hPa` },
     { variant: 'danger', text: `<${PRESSURE_WARN_LOW_MIN}/>${PRESSURE_WARN_HIGH_MAX} hPa` },
   ];
 
@@ -103,7 +103,7 @@ const RowStatistics: React.FC<RowStatisticsProps> = ({ lastHumidity, lastPressur
           <StatusCircle key={`${item.variant}:${item.text}`} variant={item.variant} text={item.text} size={circleSize} textSize={textSize} />
         ))}
       </div>
-      <div className="row-separator" />
+      <div className="row-separator"/>
       <div className="row-center">
         <div className="row-center-row">
           {humidityLegend.map((item) => (
