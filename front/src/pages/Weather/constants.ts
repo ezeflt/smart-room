@@ -9,8 +9,8 @@ export const TEXT_SIZE_DESKTOP = '1.25rem';
 export const HUMIDITY_IDEAL_MIN = 40;
 export const HUMIDITY_IDEAL_MAX = 60;
 export const HUMIDITY_WARN_LOW_MIN = 30;
-export const HUMIDITY_WARN_LOW_MAX = 39; // inclusive range 30–39
-export const HUMIDITY_WARN_HIGH_MIN = 60; // inclusive 60–70
+export const HUMIDITY_WARN_LOW_MAX = 39;
+export const HUMIDITY_WARN_HIGH_MIN = 60;
 export const HUMIDITY_WARN_HIGH_MAX = 70;
 
 // Pressure thresholds (hPa)
