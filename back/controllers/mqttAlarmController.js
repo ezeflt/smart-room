@@ -100,7 +100,7 @@ async function insertSensorState(sensorData) {
                     from: process.env.GMAIL_USER,
                     to: recipientMails.join(','),
                     subject: `Alerte Sécurité : Mouvement Détecté - ${roomName}`,
-                    text: `ALERTE SÉCURITÉ \n\nCher utilisateur,\n\nNous vous informons qu'un mouvement a été détecté dans vos locaux.\n\n Date et heure : ${formattedDate}\n Salle : ${roomName}\nCapteur (source_address) : ${sensorData.source_address}\n\n⚠️ Veuillez prendre les mesures nécessaires et vérifier la zone concernée.\n\nCeci est un message automatique, merci de ne pas y répondre.\n\nCordialement,\nVotre système de sécurité Smart Room`
+                    text: `ALERTE SÉCURITÉ \n\nCher utilisateur,\n\nNous vous informons qu'un mouvement a été détecté dans vos locaux.\n\n Date et heure : ${formattedDate}\n Salle : ${roomName}\nCapteur (source_address) : ${sensorData.source_address}\n\n Veuillez prendre les mesures nécessaires et vérifier la zone concernée.\n\nCeci est un message automatique, merci de ne pas y répondre.\n\nCordialement,\nVotre système de sécurité Smart Room`
                 };
 
                 transporter.sendMail(mailOptions, (error, info) => {
