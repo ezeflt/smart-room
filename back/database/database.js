@@ -6,7 +6,6 @@ mongoose.set('bufferCommands', false);
 
 const debugTimeout = {
   serverSelectionTimeoutMS: 60000, // 60 secondes
-  socketTimeoutMS: 90000, // 90 secondes
   connectTimeoutMS: 60000, // 60 secondes pour la connexion initiale
   bufferCommands: false, // Désactive le buffering des commandes
   maxPoolSize: 10, // Augmente le pool de connexions
